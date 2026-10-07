@@ -5,14 +5,22 @@
   "main": "agent.ts",
   "scripts": {
     "build": "tsc",
-    "run": "adk run agent.ts"
+    "run": "adk run agent.ts",
+    "typecheck": "tsc --noEmit",
+    "test:tools": "tsx scripts/test-tools.ts"
   },
   "dependencies": {
-    "@google/adk": "^2.1.0"
+    "@google/adk": "^2.1.0",
+    "@google/genai": "^2.27.0",
+    "dotenv": "^18.0.6",
+    "zod": "^4.6.5"
   },
   "private": true,
   "devDependencies": {
     "@google/adk-devtools": "^2.1.0",
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
-  }
+  },
+  "type": "module"
 }
