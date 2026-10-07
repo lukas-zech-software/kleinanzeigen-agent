@@ -30,7 +30,9 @@ npm ci
 cp .env.example .env    # then add your GEMINI_API_KEY
 ```
 
-Work through the `TODO(ch01-…)` blocks. Check yourself at any time:
+Work through the `TODO(ch01-…)` blocks. Delete each TODO comment when its task
+is done: the chapter check counts a remaining marker as open work. Check
+yourself at any time:
 
 ```sh
 npm run typecheck
@@ -44,7 +46,7 @@ the solution.
 To see the reference solution:
 
 ```sh
-git diff chapter-01-starter chapter-01-solution
+git diff chapter-01-starter-v1 chapter-01-solution-v1
 ```
 
 Start the next chapter from its own starter tag. Your work stays on your
@@ -80,4 +82,5 @@ When you add a chapter, append its two branches to `CHAIN` in
 `scripts/verify-chain.sh` and add its criteria file under
 `.claude/skills/check-chapter/chapters/`.
 
-Design notes live in `docs/superpowers/`.
+Design specs live in `docs/superpowers/specs/`. Implementation plans quote the
+reference solutions, so keep them on a maintainer branch and off the chain.

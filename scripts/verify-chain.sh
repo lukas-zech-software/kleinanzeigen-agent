@@ -15,6 +15,8 @@ fail() {
 }
 
 repo_root=$(git rev-parse --show-toplevel)
+# Pathspecs below are relative to the repository root, whatever the caller's directory.
+cd "$repo_root"
 tmp=$(mktemp -d)
 cleanup() {
   for dir in "$tmp"/*; do

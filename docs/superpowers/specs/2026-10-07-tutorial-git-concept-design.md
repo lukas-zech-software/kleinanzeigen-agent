@@ -61,6 +61,8 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
   commits that add type signatures, stubs, `// TODO(chNN-k)` blocks with task
   descriptions, new dependencies, and the chapter marker file.
 - `chapter-NN-solution` is its starter plus commits that fill in the TODOs.
+- Implementation plans quote the reference solution, so they stay on
+  maintainer branches and are not part of the chain.
 
 ### Tags
 
@@ -164,8 +166,9 @@ sections. Each criterion has:
 - One line per criterion with its status.
 - For each unmet criterion: the file, the TODO ID, what is missing, and the
   docs link.
-- A closing line with the command to view the reference solution:
-  `git diff chapter-NN-starter chapter-NN-solution`.
+- When any criterion is unverified: the reason and the command to verify it.
+- A closing line with the command to view the reference solution, using the
+  newest release tags: `git diff chapter-NN-starter-vK chapter-NN-solution-vK`.
 
 ### Hard rules
 

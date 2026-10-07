@@ -26,8 +26,9 @@ chapter they are on, and where to look for whatever is missing.
    If the file is missing, the learner is not on a chapter branch. Find the
    newest starter tag with
    `git tag --list 'chapter-01-starter-v*' --sort=-version:refname`. Tell the
-   learner to run `git switch -c my-chapter-01 <that tag>`, or use the branch
-   `chapter-01-starter` when no tag exists. Stop here.
+   learner to run `git switch -c my-chapter-01 <that tag>`, or
+   `git switch -c my-chapter-01 origin/chapter-01-starter` when no tag exists.
+   Stop here.
 
 2. Read `chapters/chapter-NN.md` next to this file. If it does not exist, say
    that chapter NN has no criteria yet. Stop here.
@@ -81,9 +82,22 @@ Hint: <the hint from the criteria file>
 Docs: <the docs link from the criteria file>
 ```
 
-End with:
+Then, when any criterion is unverified, one block for all of them:
+
+```
+Unverified: ch01-live-1, ch01-live-2
+Reason: <the key is not set | you declined the live test | no photo path was given>
+To verify: <the live test command from the criteria file>
+```
+
+End with the command to compare against the reference solution. `vK` is the
+newest release listed by
+`git tag --list 'chapter-NN-starter-v*' --sort=-version:refname`:
 
 ```
 To compare with the reference solution, run:
-git diff chapter-NN-starter chapter-NN-solution
+git diff chapter-NN-starter-vK chapter-NN-solution-vK
 ```
+
+When no tag exists, give
+`git diff origin/chapter-NN-starter origin/chapter-NN-solution` instead.
