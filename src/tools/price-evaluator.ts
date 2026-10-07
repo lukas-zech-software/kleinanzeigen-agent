@@ -1,27 +1,41 @@
 import { FunctionTool } from '@google/adk';
 import { z } from 'zod';
+import { GEMINI_MODEL, getGenAI } from '../config.js';
 
-// TODO(ch01-4): Define the input schema of the PriceEvaluatorTool.
-// It needs `itemQuery` (search terms for the item) and `condition`
-// (one of "new", "used", "defective").
-export const priceEvaluatorInputSchema = z.object({});
+export const priceEvaluatorInputSchema = z.object({
+  itemQuery: z.string().describe('Search terms for the item, e.g. "Logitech MX Keys keyboard black".'),
+  condition: z.enum(['new', 'used', 'defective']).describe('Condition of the item being sold.'),
+});
 
-// TODO(ch01-5): Define the output schema of the PriceEvaluatorTool.
-// It needs the numbers `priceMin`, `priceMax` and `recommendedPrice`, and a
-// `currency` code.
-export const priceEvaluatorOutputSchema = z.object({});
+export const priceEvaluatorOutputSchema = z.object({
+  priceMin: z.number().nonnegative().describe('Lower end of the realistic used price range.'),
+  priceMax: z.number().nonnegative().describe('Upper end of the realistic used price range.'),
+  recommendedPrice: z.number().nonnegative().describe('Price to list the item at.'),
+  currency: z.string().describe('ISO 4217 currency code, e.g. "EUR".'),
+});
 
 export type PriceEvaluatorInput = z.infer<typeof priceEvaluatorInputSchema>;
 export type PriceEvaluatorOutput = z.infer<typeof priceEvaluatorOutputSchema>;
 
-// TODO(ch01-6): Implement the price research.
-// Find a realistic second-hand price range for the item in its condition and
-// return it parsed with `priceEvaluatorOutputSchema`. Use a real source, for
-// example Gemini with Google Search grounding, not fixed numbers.
-// `getGenAI()` and `GEMINI_MODEL` from `../config.js` give you the client and
-// the model.
 export async function evaluatePrice(input: PriceEvaluatorInput): Promise<PriceEvaluatorOutput> {
-  throw new Error('evaluatePrice is not implemented yet (TODO ch01-6).');
+  const prompt =
+    `Search for current second-hand listings in Germany for: ${input.itemQuery} (condition: ${input.condition}). ` +
+    'Answer with one JSON object and nothing else, using the keys ' +
+    'priceMin, priceMax, recommendedPrice (numbers) and currency (ISO 4217 code).';
+
+  // Search grounding cannot be combined with a response schema on every model,
+  // so the JSON is requested in the prompt and validated with Zod afterwards.
+  const response = await getGenAI().models.generateContent({
+    model: GEMINI_MODEL,
+    contents: prompt,
+    config: { tools: [{ googleSearch: {} }] },
+  });
+
+  const json = response.text?.match(/\{[\s\S]*\}/)?.[0];
+  if (!json) {
+    throw new Error('Gemini returned no JSON price estimate.');
+  }
+  return priceEvaluatorOutputSchema.parse(JSON.parse(json));
 }
 
 export const priceEvaluatorTool = new FunctionTool({
