@@ -17,7 +17,8 @@ This spec defines:
    the chapter goal, and
 3. the chapter 1 starter and solution, built as the first proof of the scheme.
 
-Source of truth for chapter content: `specs/tutorial_content.md`.
+Source of truth for chapter content:
+[`docs/specs/tutorial_content.md`](../../specs/tutorial_content.md).
 
 ## Scope
 
@@ -34,8 +35,6 @@ Out of scope:
 - Tests for the reference solutions. Solutions are reference material and need
   not run.
 - Changes to the `adk-web` submodule.
-- Fixing the link in `specs/tutorial_idea_git_concept.md`, which points at a
-  `tutorial_concept.md` that exists only under `specs/de/`.
 
 ## Decisions
 
@@ -55,7 +54,7 @@ Out of scope:
 main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── …
 ```
 
-- `main` holds only what every chapter shares: README, `specs/`, the skill,
+- `main` holds only what every chapter shares: README, `docs/specs/`, the skill,
   `scripts/verify-chain.sh`, `.env.example`, and the bare `package.json` and
   `tsconfig.json`. It contains no chapter code.
 - `chapter-NN-starter` is the previous solution (or `main` for chapter 1) plus
