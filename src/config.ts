@@ -4,7 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 dotenv.config({ quiet: true });
 
 /** Gemini model used by every tool. Override with GEMINI_MODEL in .env. */
-export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
 
 /** Returns a Gemini client, or throws a readable error when no API key is configured. */
 export function getGenAI(): GoogleGenAI {
