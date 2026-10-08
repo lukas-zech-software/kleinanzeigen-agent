@@ -10,14 +10,18 @@ export const visionInspectorInputSchema = z.object({
   mimeType: z
     .string()
     .optional()
-    .describe('MIME type of the image, e.g. "image/jpeg". Inferred from the file extension when omitted.'),
+    .describe(
+      'MIME type of the image, e.g. "image/jpeg". Inferred from the file extension when omitted.',
+    ),
 });
 
 export const visionInspectorOutputSchema = z.object({
   title: z.string().describe('Suggested listing title, at most 65 characters.'),
   detectedCategory: z.string().describe('Product category, e.g. "Smartphones".'),
   condition: z.enum(['new', 'used', 'defective']).describe('Visible condition of the item.'),
-  keyAttributes: z.array(z.string()).describe('Brand, model, color and other distinguishing attributes.'),
+  keyAttributes: z
+    .array(z.string())
+    .describe('Brand, model, color and other distinguishing attributes.'),
 });
 
 export type VisionInspectorInput = z.infer<typeof visionInspectorInputSchema>;
@@ -38,7 +42,9 @@ const PROMPT =
 export async function inspectImage(input: VisionInspectorInput): Promise<VisionInspectorOutput> {
   const mimeType = input.mimeType ?? MIME_TYPE_BY_EXTENSION[extname(input.imagePath).toLowerCase()];
   if (!mimeType) {
-    throw new Error(`Cannot infer the MIME type of "${input.imagePath}". Pass mimeType explicitly.`);
+    throw new Error(
+      `Cannot infer the MIME type of "${input.imagePath}". Pass mimeType explicitly.`,
+    );
   }
 
   const imagePart = input.imagePath.startsWith('gs://')
