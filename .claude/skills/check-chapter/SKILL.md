@@ -48,6 +48,7 @@ chapter they are on, and where to look for whatever is missing.
 5. For `live` criteria, check that the key named in the criteria file is set:
    either in the environment or as a non-empty value in `.env`. Then ask the
    learner whether to run the live test command, and for the path to a photo.
+   Offer the photos in `examples/photos/` when they have none of their own.
    The command calls the Gemini API and uses their quota.
 
    Mark every `live` criterion **unverified** when the key is missing, the

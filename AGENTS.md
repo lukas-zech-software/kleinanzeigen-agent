@@ -33,14 +33,14 @@ agent, one chapter at a time. Chapters are Git branches, not folders;
 ## Commands
 
 ```sh
-npm ci                                    # install dependencies
-npm run typecheck                         # tsc --noEmit
-npm run test:tools -- path/to/photo.jpg   # live test of the chapter 1 tools
-npm run format                            # format every file with Prettier
+npm ci                                               # install dependencies
+npm run typecheck                                    # tsc --noEmit
+npm run test:tools -- examples/photos/game-boy.jpg   # live test of the chapter 1 tools
+npm run format                                       # format every file with Prettier
 ```
 
 `test:tools` calls the Gemini API and uses the learner's quota. Ask before you
-run it.
+run it. `examples/photos/` has photos to test with when the learner has none.
 
 ## Checking a chapter: the `check-chapter` skill
 

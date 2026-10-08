@@ -37,8 +37,11 @@ marker as open work. Check yourself at any time:
 
 ```sh
 npm run typecheck
-npm run test:tools -- path/to/photo.jpg
+npm run test:tools -- examples/photos/game-boy.jpg
 ```
+
+[examples/photos](examples/photos/README.md) has five freely licensed photos
+of typical second-hand items. Your own photo works too.
 
 Prettier keeps the code looking the same everywhere. Run it before you commit:
 
