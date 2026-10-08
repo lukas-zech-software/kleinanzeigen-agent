@@ -3,7 +3,9 @@ import { z } from 'zod';
 import { GEMINI_MODEL, getGenAI } from '../config.js';
 
 export const priceEvaluatorInputSchema = z.object({
-  itemQuery: z.string().describe('Search terms for the item, e.g. "Logitech MX Keys keyboard black".'),
+  itemQuery: z
+    .string()
+    .describe('Search terms for the item, e.g. "Logitech MX Keys keyboard black".'),
   condition: z.enum(['new', 'used', 'defective']).describe('Condition of the item being sold.'),
 });
 
