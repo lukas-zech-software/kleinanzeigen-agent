@@ -42,31 +42,46 @@ for ((i = 1; i < ${#CHAIN[@]}; i++)); do
 done
 
 for branch in "${CHAIN[@]}"; do
+  number=
   case "$branch" in
-    chapter-*-starter | chapter-*-solution) ;;
-    *) continue ;;
+    chapter-*-starter | chapter-*-solution)
+      number=${branch#chapter-}
+      number=${number%%-*}
+      kind=${branch##*-}
+
+      # Invariant 4: the chapter marker matches the branch name.
+      marker=$(git show "$branch:.tutorial/chapter" 2>/dev/null | tr -d '[:space:]' || true)
+      [ "$marker" = "$number" ] ||
+        fail "$branch" "invariant 4: .tutorial/chapter is '$marker', expected '$number'"
+
+      # Invariant 5: CURRENT_CHAPTER.md describes this chapter.
+      heading=$(git show "$branch:CURRENT_CHAPTER.md" 2>/dev/null | sed -n 1p || true)
+      case "$heading" in
+        "# Chapter $((10#$number)):"*) ;;
+        *) fail "$branch" "invariant 5: CURRENT_CHAPTER.md starts with '$heading', expected '# Chapter $((10#$number)): …'" ;;
+      esac
+
+      # Invariant 3: a solution has no TODO left for its own chapter.
+      if [ "$kind" = solution ] && git grep -q "TODO(ch$number-" "$branch" -- src scripts; then
+        fail "$branch" "invariant 3: TODO(ch$number-…) markers remain"
+      fi
+      ;;
   esac
-  number=${branch#chapter-}
-  number=${number%%-*}
-  kind=${branch##*-}
 
-  # Invariant 4: the chapter marker matches the branch name.
-  marker=$(git show "$branch:.tutorial/chapter" 2>/dev/null | tr -d '[:space:]' || true)
-  [ "$marker" = "$number" ] ||
-    fail "$branch" "invariant 4: .tutorial/chapter is '$marker', expected '$number'"
-
-  # Invariant 3: a solution has no TODO left for its own chapter.
-  if [ "$kind" = solution ] && git grep -q "TODO(ch$number-" "$branch" -- src scripts; then
-    fail "$branch" "invariant 3: TODO(ch$number-…) markers remain"
-  fi
-
-  # Invariants 2 and 3: the branch typechecks.
   worktree="$tmp/$branch"
   git worktree add --detach --quiet "$worktree" "$branch"
   (cd "$worktree" && npm ci --silent >/dev/null 2>&1) ||
     fail "$branch" "npm ci failed"
-  (cd "$worktree" && npx tsc --noEmit) ||
-    fail "$branch" "invariant 2: tsc --noEmit failed"
+
+  # Invariants 2 and 3: a chapter branch typechecks.
+  if [ -n "$number" ]; then
+    (cd "$worktree" && npx tsc --noEmit) ||
+      fail "$branch" "invariant 2: tsc --noEmit failed"
+  fi
+
+  # Invariant 6: every branch is formatted with Prettier.
+  (cd "$worktree" && npx prettier --check --log-level warn .) ||
+    fail "$branch" "invariant 6: prettier --check failed, run 'npm run format'"
   echo "ok   [$branch]"
 done
 

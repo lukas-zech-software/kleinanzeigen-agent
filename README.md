@@ -4,7 +4,8 @@ Build an agent that turns a photo of an item into a published Kleinanzeigen
 listing, one chapter at a time. The repository root is the project. Chapters
 are branches, not folders.
 
-The chapter content is in [docs/specs/tutorial_content.md](docs/specs/tutorial_content.md).
+What the chapter you are on asks of you is in
+[CURRENT_CHAPTER.md](CURRENT_CHAPTER.md). The file changes with the branch.
 
 ## How the chapters are laid out
 
@@ -30,18 +31,25 @@ npm ci
 cp .env.example .env    # then add your GEMINI_API_KEY
 ```
 
-Work through the `TODO(ch01-…)` blocks. Delete each TODO comment when its task
-is done: the chapter check counts a remaining marker as open work. Check
-yourself at any time:
+Read `CURRENT_CHAPTER.md`, then work through the `TODO(ch01-…)` blocks. Delete
+each TODO comment when its task is done: the chapter check counts a remaining
+marker as open work. Check yourself at any time:
 
 ```sh
 npm run typecheck
 npm run test:tools -- path/to/photo.jpg
 ```
 
+Prettier keeps the code looking the same everywhere. Run it before you commit:
+
+```sh
+npm run format
+```
+
 In Claude Code, ask "is my chapter done?" to run the `check-chapter` skill. It
 tells you which goals are still open and where to look. It does not show you
-the solution.
+the solution. Other coding agents find the same instructions in
+[AGENTS.md](AGENTS.md).
 
 To see the reference solution:
 
@@ -79,8 +87,10 @@ git switch -c my-chapter-02 chapter-02-starter-v1
    and `git push origin --tags`.
 
 When you add a chapter, append its two branches to `CHAIN` in
-`scripts/verify-chain.sh` and add its criteria file under
-`.claude/skills/check-chapter/chapters/`.
+`scripts/verify-chain.sh`, add its criteria file under
+`.claude/skills/check-chapter/chapters/`, and replace `CURRENT_CHAPTER.md` on
+the starter with the chapter's content. Its first line must be
+`# Chapter N: …`.
 
 Design specs live in `docs/superpowers/specs/`. Implementation plans quote the
 reference solutions, so keep them on a maintainer branch and off the chain.
