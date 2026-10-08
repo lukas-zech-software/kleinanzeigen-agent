@@ -94,8 +94,7 @@ Required key: `GEMINI_API_KEY`
 - Type: live
 - Target: `scripts/test-tools.ts`
 - Requirement: the output contains a `PriceEvaluatorTool result:` line with
-  numeric `priceMin`, `priceMax`, and `recommendedPrice`, and the script exits
-  0.
+  numeric `priceMin`, `priceMax`, and `recommendedPrice`, and the script exits 0.
 - Hint: If the answer is prose instead of JSON, tighten the instruction about
   the output format.
 - Docs: https://ai.google.dev/gemini-api/docs/google-search

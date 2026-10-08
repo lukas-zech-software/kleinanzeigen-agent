@@ -1,0 +1,9 @@
+# Third-party and generated files
+adk-web
+node_modules
+dist
+package-lock.json
+.idea
+
+# Maintainer specs keep their own layout
+docs
