@@ -6,8 +6,8 @@
 - A Google AI Studio API key, stored in `.env` as `GEMINI_API_KEY`.
 - The dependencies from `npm ci`: `@google/adk`, `@google/genai`, `zod`,
   `dotenv`, and `tsx`.
-- A photo of an item you could sell, such as a phone or a keyboard, for the
-  live test.
+- A photo of an item you could sell for the live test. Take your own or use
+  one from [examples/photos](examples/photos/README.md).
 
 ## Goal
 
@@ -53,7 +53,7 @@ of a tool's arguments.
 
 ```sh
 npm run typecheck
-npm run test:tools -- path/to/photo.jpg
+npm run test:tools -- examples/photos/game-boy.jpg
 ```
 
 The chapter is done when:
