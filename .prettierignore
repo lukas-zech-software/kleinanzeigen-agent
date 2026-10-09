@@ -1,5 +1,6 @@
 # Third-party and generated files
 adk-web
+.agents
 node_modules
 dist
 package-lock.json
