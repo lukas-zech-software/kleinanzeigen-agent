@@ -9,7 +9,15 @@ yarn-error.log*
 /.pnp
 .pnp.js
 
-.vscode/*### JetBrains template
+.vscode/*
+
+# Claude Code settings that belong to one machine
+.claude/settings.local.json
+
+# Scratch files of the Superpowers skills
+.superpowers/
+
+### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 

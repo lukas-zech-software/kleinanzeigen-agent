@@ -1,10 +1,10 @@
 # Third-party and generated files
-adk-web
 .agents
 node_modules
 dist
 package-lock.json
 .idea
+.claude/settings.local.json
 
 # Maintainer specs keep their own layout
 docs
