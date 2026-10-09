@@ -17,8 +17,7 @@ This spec defines:
    the chapter goal, and
 3. the chapter 1 starter and solution, built as the first proof of the scheme.
 
-Source of truth for chapter content:
-[`docs/specs/tutorial_content.md`](../../specs/tutorial_content.md).
+Source of truth for chapter content: [`docs/roadmap.md`](../../roadmap.md).
 
 ## Scope
 
@@ -54,7 +53,7 @@ Out of scope:
 main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── …
 ```
 
-- `main` holds only what every chapter shares: README, `docs/specs/`, the skill,
+- `main` holds only what every chapter shares: README, `docs/`, the skill,
   `scripts/verify-chain.sh`, `.env.example`, and the bare `package.json` and
   `tsconfig.json`. It contains no chapter code.
 - `chapter-NN-starter` is the previous solution (or `main` for chapter 1) plus
