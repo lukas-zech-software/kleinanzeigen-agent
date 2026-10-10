@@ -1,99 +1,209 @@
-# Kleinanzeigen Agent: an ADK TypeScript tutorial
+# Kleinanzeigen Agent: a hands-on ADK tutorial for TypeScript
 
-Build an agent that turns a photo of an item into a published Kleinanzeigen
-listing, one chapter at a time. The repository root is the project. Chapters
-are branches, not folders.
+[![Verify chain](https://github.com/lukas-zech-software/kleinanzeigen-agent/actions/workflows/verify-chain.yml/badge.svg?branch=main)](https://github.com/lukas-zech-software/kleinanzeigen-agent/actions/workflows/verify-chain.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js 26 or newer](https://img.shields.io/badge/node-%E2%89%A5%2026-brightgreen.svg)](.nvmrc)
 
-What the chapter you are on asks of you is in
-[CURRENT_CHAPTER.md](CURRENT_CHAPTER.md). The file changes with the branch.
+Build an AI agent that turns a photo of an item into a classified listing that
+is ready to post, one chapter at a time.
 
-## How the chapters are laid out
+The [Agent Development Kit](https://adk.dev/) (ADK) is Google's open-source
+framework for building AI agents. This tutorial teaches it by doing. Each
+chapter gives you a working TypeScript project with marked gaps, and you fill
+them in. Your coding agent can review your work and give hints without giving
+away the solution.
 
+I am building it to teach myself ADK and the Google services around it, and I
+publish it so that other developers can learn the same way.
+
+> **Status:** chapter 1 of 4 is available. Chapters 2 to 4 are planned. See the
+> [roadmap](docs/roadmap.md).
+
+- **Here to learn?** Go to the [Quick start](#quick-start).
+- **Here to see how it is built?** Take the [guided tour](#guided-tour).
+
+## What you build
+
+```mermaid
+flowchart LR
+  photo([Photo of an item])
+  subgraph ch1 ["Chapter 1: tools"]
+    vision[Vision inspector]
+    price[Price evaluator]
+  end
+  subgraph ch2 ["Chapter 2: listing agent"]
+    draft[/Listing draft/]
+  end
+  review{{You review and approve}}
+  subgraph ch3 ["Chapter 3: publisher agent"]
+    package[/Ready-to-post package/]
+  end
+  post([You post the listing])
+
+  photo --> vision --> price --> draft --> review --> package --> post
 ```
-main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── …
-```
 
-- `chapter-NN-starter` has the types and boilerplate for a chapter, with the
-  work you do marked as `// TODO(chNN-k)`.
-- `chapter-NN-solution` is a reference implementation. It typechecks but is
-  not tested, so read it as an example and not as the only right answer.
-- Each starter is built on the previous chapter's solution.
-- Tags such as `chapter-01-starter-v1` are fixed snapshots. Branches may be
-  rebased when the tutorial is corrected; tags never move.
+Chapter 4 moves the same pipeline to Google Cloud, where a new photo starts it.
 
-## Working through a chapter
+| Chapter | You learn                                                               | Status    |
+| ------- | ----------------------------------------------------------------------- | --------- |
+| 1       | ADK tools with typed Zod schemas, structured output, search grounding   | Available |
+| 2       | An agent that uses the tools and writes a draft for a person to review  | Planned   |
+| 3       | A second agent that validates an approved draft and hands it to a human | Planned   |
+| 4       | Cloud Run services started by storage events through Eventarc           | Planned   |
 
-You need Node.js 26 or newer and a Google AI Studio API key.
+The agent never posts a listing. It prepares and checks one, and a person
+decides. The [roadmap](docs/roadmap.md) describes each chapter.
+
+## Quick start
+
+You need:
+
+- Node.js 26 or newer and Git,
+- a Google AI Studio API key, which you create at
+  [aistudio.google.com/apikey](https://aistudio.google.com/apikey),
+- some experience with TypeScript. You do not need to know ADK.
+
+Clone the repository and start chapter 1 from its starter tag:
 
 ```sh
-git switch -c my-chapter-01 chapter-01-starter-v1
+git clone https://github.com/lukas-zech-software/kleinanzeigen-agent.git
+cd kleinanzeigen-agent
+git switch -c my-chapter-01 chapter-01-starter-v3
 npm ci
 cp .env.example .env    # then add your GEMINI_API_KEY
 ```
 
-Read `CURRENT_CHAPTER.md`, then work through the `TODO(ch01-…)` blocks. Delete
-each TODO comment when its task is done: the chapter check counts a remaining
-marker as open work. Check yourself at any time:
+Clone rather than fork. If you do fork, untick "Copy the `main` branch only",
+because the chapters live on their own branches.
+
+Check your work at any time:
 
 ```sh
 npm run typecheck
 npm run test:tools -- examples/photos/game-boy.jpg
 ```
 
+`test:tools` calls the Gemini API and uses your quota. On the untouched starter
+it stops with `inspectImage is not implemented yet (TODO ch01-3).` That is
+your starting point.
+
+When chapter 1 is finished, the same command prints something like this:
+
+```
+Tools under test: vision_inspector, price_evaluator
+VisionInspectorTool result: {
+  title: 'Original Nintendo Game Boy DMG-01 Handheld Console Classic Grey',
+  detectedCategory: 'Handheld Game Consoles',
+  condition: 'used',
+  keyAttributes: [
+    'Nintendo',
+    'Game Boy',
+    'DMG-01',
+    'Grey',
+    'Vintage Handheld System',
+    '8-bit'
+  ]
+}
+PriceEvaluatorTool result: { priceMin: 65, priceMax: 130, recommendedPrice: 90, currency: 'EUR' }
+```
+
 [examples/photos](examples/photos/README.md) has five freely licensed photos
 of typical second-hand items. Your own photo works too.
 
-Prettier keeps the code looking the same everywhere. Run it before you commit:
+## Working through a chapter
 
-```sh
-npm run format
+Chapters are branches, not folders. The repository root is always the project.
+
+```
+main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── …
 ```
 
-In Claude Code, ask "is my chapter done?" to run the `check-chapter` skill. It
-tells you which goals are still open and where to look. It does not show you
-the solution. Other coding agents find the same instructions in
-[AGENTS.md](AGENTS.md).
+- `chapter-NN-starter` has the types and boilerplate for a chapter. The work
+  you do is marked as `// TODO(chNN-k)`.
+- `chapter-NN-solution` is a reference implementation. Read it as an example
+  and not as the only right answer.
+- Tags such as `chapter-01-starter-v3` are fixed snapshots. Branches may be
+  rebased when the tutorial is corrected. Tags never move.
+
+On a chapter branch, [CURRENT_CHAPTER.md](CURRENT_CHAPTER.md) describes that
+chapter: what you need, what you build, and how to check it. The file changes
+with the branch.
+
+1. Read `CURRENT_CHAPTER.md`.
+2. Work through the `TODO(ch01-…)` blocks. Delete each TODO comment when its
+   task is done: the chapter check counts a remaining marker as open work.
+3. Run `npm run format` before you commit. Prettier keeps the code looking the
+   same everywhere.
+4. Ask your coding agent "is my chapter done?". In Claude Code this runs the
+   `check-chapter` skill, which tells you which goals are still open and where
+   to look. Other coding agents find the same instructions in
+   [AGENTS.md](AGENTS.md).
 
 To see the reference solution:
 
 ```sh
-git diff chapter-01-starter-v1 chapter-01-solution-v1
+git diff chapter-01-starter-v3 chapter-01-solution-v3
 ```
 
 Start the next chapter from its own starter tag. Your work stays on your
-branch:
+branch.
 
-```sh
-git switch -c my-chapter-02 chapter-02-starter-v1
-```
+## Guided tour
 
-## Maintaining the chain
+If you want to judge how this repository is made, these are the parts worth
+reading:
 
-1. Commit the fix on the earliest branch it belongs to (`main` for anything
-   shared, such as this README or the skill).
-2. Replay the rest of the chain onto it. From the last branch in the chain:
+- **[The branch chain and its check](scripts/verify-chain.sh).** Each starter
+  is built on the previous chapter's solution. The script proves that the
+  chain still holds: ancestry, a clean typecheck on every chapter branch, no
+  open TODO in a solution, and consistent formatting.
+- **[The CI workflow](.github/workflows/verify-chain.yml).** It runs that
+  script on every push and once a week, so a breaking dependency release shows
+  up as a red badge.
+- **[The `check-chapter` skill](.claude/skills/check-chapter/SKILL.md).** A
+  coding agent reviews the learner's work against
+  [written criteria](.claude/skills/check-chapter/chapters/chapter-01.md),
+  names the gap, and gives a hint. It is forbidden to read the solution.
+- **[AGENTS.md](AGENTS.md).** The rules that make any coding agent behave as a
+  tutor here and not as a code generator.
+- **[How this was built](docs/how-this-was-built.md).** The workflow behind the
+  repository: design spec, implementation plan, verified chain. The specs and
+  a plan are in [docs/superpowers](docs/superpowers).
 
-   ```sh
-   git switch chapter-01-solution
-   git rebase --update-refs <branch-you-fixed>
-   ```
+## Questions and feedback
 
-3. Verify: `scripts/verify-chain.sh`
-4. Cut the next release on every chain branch, for example:
+Ask questions in
+[Discussions](https://github.com/lukas-zech-software/kleinanzeigen-agent/discussions).
+If something in the tutorial is wrong or no longer works, please open an
+[issue](https://github.com/lukas-zech-software/kleinanzeigen-agent/issues).
+[CONTRIBUTING.md](CONTRIBUTING.md) explains how fixes travel through the
+chapter branches.
 
-   ```sh
-   git tag -a chapter-01-starter-v2 chapter-01-starter -m "Chapter 1 starter, release v2"
-   git tag -a chapter-01-solution-v2 chapter-01-solution -m "Chapter 1 solution, release v2"
-   ```
+## About the author
 
-5. Push: `git push --force-with-lease origin main chapter-01-starter chapter-01-solution`
-   and `git push origin --tags`.
+I'm Lukas Zech, a Senior Staff/Principal Software Engineer from Augsburg. I've
+been building software professionally since 2010, across freelance projects,
+startups (including my own) and engineering teams, mostly in TypeScript and
+across the whole stack.
 
-When you add a chapter, append its two branches to `CHAIN` in
-`scripts/verify-chain.sh`, add its criteria file under
-`.claude/skills/check-chapter/chapters/`, and replace `CURRENT_CHAPTER.md` on
-the starter with the chapter's content. Its first line must be
-`# Chapter N: …`.
+- Sharing knowledge, mentoring and a good developer experience are part of how
+  I work. Software development is a team sport.
+- I'm exploring how coding agents can make everyday engineering better. My
+  rule: AI-generated code meets the same standards as everything else we ship.
+- This tutorial is how I'm teaching myself ADK. I publish it so others can
+  learn along with me.
 
-Design specs live in `docs/superpowers/specs/`. Implementation plans quote the
-reference solutions, so keep them on a maintainer branch and off the chain.
+Want to know more about me?
+[Visit my GitHub profile](https://github.com/lukas-zech-software).
+
+## License and disclaimer
+
+The code and the tutorial text are released under the [MIT License](LICENSE).
+The example photos are in the public domain or under CC0, as listed in
+[examples/photos](examples/photos/README.md).
+
+This project is not affiliated with, endorsed by, or connected to
+Kleinanzeigen or its operator. The name only describes the kind of listing the
+agent prepares. The tutorial does not automate posting: a person publishes
+every listing.
