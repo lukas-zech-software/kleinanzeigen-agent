@@ -6,7 +6,7 @@ on:
       - main
       - 'chapter-**'
   schedule:
-    # Mondays, 05:17 UTC: catches breakage from upstream dependencies.
+    # Mondays, 05:17 UTC: catches changes in Node.js 26 and the runner image.
     - cron: '17 5 * * 1'
   workflow_dispatch:
 

@@ -60,6 +60,5 @@ When you add a chapter, append its two branches to `CHAIN` in
 the starter with the chapter's content. Its first line must be
 `# Chapter N: …`.
 
-Design specs live in `docs/superpowers/specs/` and implementation plans in
-`docs/superpowers/plans/`. A plan that quotes a reference solution stays on a
-maintainer branch and off the chain.
+Design specs live in `docs/superpowers/specs/`. Implementation plans stay on a
+maintainer branch and off the chain: they quote the reference solutions.

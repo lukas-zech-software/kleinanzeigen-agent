@@ -5,7 +5,8 @@
 [![Node.js 26 or newer](https://img.shields.io/badge/node-%E2%89%A5%2026-brightgreen.svg)](.nvmrc)
 
 Build an AI agent that turns a photo of an item into a classified listing that
-is ready to post, one chapter at a time.
+is ready to post, one chapter at a time. _Kleinanzeigen_ is German for
+classified ads.
 
 The [Agent Development Kit](https://adk.dev/) (ADK) is Google's open-source
 framework for building AI agents. This tutorial teaches it by doing. Each
@@ -159,8 +160,8 @@ reading:
   chain still holds: ancestry, a clean typecheck on every chapter branch, no
   open TODO in a solution, and consistent formatting.
 - **[The CI workflow](.github/workflows/verify-chain.yml).** It runs that
-  script on every push and once a week, so a breaking dependency release shows
-  up as a red badge.
+  script on every push and once a week, so a broken chain shows up as a red
+  badge.
 - **[The `check-chapter` skill](.claude/skills/check-chapter/SKILL.md).** A
   coding agent reviews the learner's work against
   [written criteria](.claude/skills/check-chapter/chapters/chapter-01.md),
@@ -168,8 +169,8 @@ reading:
 - **[AGENTS.md](AGENTS.md).** The rules that make any coding agent behave as a
   tutor here and not as a code generator.
 - **[How this was built](docs/how-this-was-built.md).** The workflow behind the
-  repository: design spec, implementation plan, verified chain. The specs and
-  a plan are in [docs/superpowers](docs/superpowers).
+  repository: design spec, implementation plan, verified chain. The design
+  specs are in [docs/superpowers/specs](docs/superpowers/specs).
 
 ## Questions and feedback
 
@@ -199,9 +200,12 @@ Want to know more about me?
 
 ## License and disclaimer
 
-The code and the tutorial text are released under the [MIT License](LICENSE).
+My code and the tutorial text are released under the [MIT License](LICENSE).
 The example photos are in the public domain or under CC0, as listed in
-[examples/photos](examples/photos/README.md).
+[examples/photos](examples/photos/README.md). The `gemini-api-dev` skill in
+[.agents/skills](.agents/skills/gemini-api-dev) comes from
+[google-gemini/gemini-skills](https://github.com/google-gemini/gemini-skills)
+and stays under the [Apache License 2.0](LICENSES/Apache-2.0.txt).
 
 This project is not affiliated with, endorsed by, or connected to
 Kleinanzeigen or its operator. The name only describes the kind of listing the

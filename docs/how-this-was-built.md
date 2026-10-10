@@ -1,7 +1,8 @@
 # How this was built
 
-I built this tutorial with coding agents, mostly Claude Code. This page
-describes the method, because the method is the part I would reuse.
+I built this tutorial with coding agents, mostly Claude Code with the
+Superpowers skills for brainstorming, planning, and review. This page describes
+the method, because the method is the part I would reuse.
 
 My rule for AI-assisted work is simple: generated code and text meet the same
 standards as everything else I ship. The larger changes in this repository
@@ -17,7 +18,7 @@ solution for each, and a skill that checks a learner's work.
 
 ### 2. A design spec
 
-Before any file was created, the idea went through a structured brainstorming
+Before any tutorial code was written, the idea went through a structured brainstorming
 session with the agent: one question at a time, alternatives with trade-offs,
 then a written design that I reviewed.
 
@@ -25,18 +26,16 @@ then a written design that I reviewed.
 - [Public release](superpowers/specs/2026-10-10-public-release-design.md)
 
 The specs record decisions and what was left out on purpose. The second one,
-for example, records why chapter 3 stops before posting a listing and hands
-over to a person.
+for example, records the decision that chapter 3 stops before posting a
+listing and hands over to a person. The [roadmap](roadmap.md) explains why.
 
 ### 3. An implementation plan
 
 Each spec becomes a plan of small tasks with exact file contents, the commands
 that verify them, and the expected output.
 
-- [Public release plan](superpowers/plans/2026-10-10-public-release.md)
-
-The plan for chapter 1 quotes the reference solution, so it stays on a
-maintainer branch and out of the learner's way.
+The plans stay on a maintainer branch and out of the learner's way. The plan
+for chapter 1, for example, quotes the reference solution.
 
 ### 4. A chain of branches that is verified
 
