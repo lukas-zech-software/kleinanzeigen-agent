@@ -12,9 +12,11 @@
     "node": ">=26"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run check:apis && tsc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check": "npm run check:apis && npm run check:adk-version && npm run format:check",
+    "check:apis": "scripts/check-banned-apis.sh",
     "check:adk-version": "scripts/check-adk-version.sh"
   },
   "dependencies": {
