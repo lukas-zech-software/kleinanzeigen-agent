@@ -224,3 +224,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Listing drafts the agent writes beside the example photos
+examples/photos/*.md
+!examples/photos/README.md
+
+# Session files that `adk run --save_session` writes
+adk/*.session.json
