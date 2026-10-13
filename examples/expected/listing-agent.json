@@ -1,0 +1,7 @@
+{
+  "expected_tool_use": [
+    { "tool_name": "vision_inspector" },
+    { "tool_name": "price_evaluator" },
+    { "tool_name": "create_listing_draft" }
+  ]
+}
