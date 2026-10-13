@@ -1,6 +1,7 @@
-import { GOOGLE_SEARCH, LlmAgent } from '@google/adk';
+import { GOOGLE_SEARCH, LlmAgent, type SingleAfterModelCallback } from '@google/adk';
 import { z } from 'zod';
 import { GEMINI_MODEL } from '../config.js';
+import { SEARCH_QUERIES_KEY } from '../session-state.js';
 
 export const priceEvaluatorOutputSchema = z.object({
   priceMin: z.number().min(0).describe('Lowest realistic second-hand price.'),
@@ -10,6 +11,19 @@ export const priceEvaluatorOutputSchema = z.object({
 });
 
 export type PriceEvaluatorOutput = z.infer<typeof priceEvaluatorOutputSchema>;
+
+/**
+ * Stores the Google searches of the model's answer in the session state.
+ * An agent that calls this one through `AgentTool` does not see its events. The session state is
+ * the way to hand a fact back to it, here the proof that a search took place.
+ */
+export const recordSearchQueries: SingleAfterModelCallback = async ({ context, response }) => {
+  const queries = response.groundingMetadata?.webSearchQueries ?? [];
+  if (queries.length > 0) {
+    context.state.set(SEARCH_QUERIES_KEY, queries);
+  }
+  return undefined;
+};
 
 export const priceEvaluatorAgent = new LlmAgent({
   name: 'price_evaluator',
@@ -23,6 +37,7 @@ export const priceEvaluatorAgent = new LlmAgent({
     'End your answer with one JSON object and write nothing after it. ' +
     'The object has the numbers priceMin, priceMax and recommendedPrice, and the string currency with the ISO 4217 code.',
   tools: [GOOGLE_SEARCH],
+  afterModelCallback: recordSearchQueries,
 });
 
 export function parsePriceAnswer(text: string): PriceEvaluatorOutput {

@@ -12,11 +12,20 @@ export type RecordedRequest = Pick<LlmRequest, 'contents' | 'config'>;
 /** Every request the scripted model received, in order. */
 export const recordedRequests: RecordedRequest[] = [];
 
-const answers: string[] = [];
+/**
+ * One scripted answer: a text, or a call of one tool. A text answer may carry the search queries
+ * Gemini would report after a Google Search.
+ */
+export type ScriptedAnswer =
+  | string
+  | { call: string; args: Record<string, unknown> }
+  | { text: string; searchQueries: string[] };
 
-/** Queues the texts the scripted model answers with, one for each model call. */
-export function scriptAnswers(...texts: string[]): void {
-  answers.push(...texts);
+const answers: ScriptedAnswer[] = [];
+
+/** Queues the answers of the scripted model, one for each model call, whichever agent makes it. */
+export function scriptAnswers(...scripted: ScriptedAnswer[]): void {
+  answers.push(...scripted);
 }
 
 /** Forgets the recorded requests and the queued answers. */
@@ -40,11 +49,27 @@ class ScriptedLlm extends BaseLlm {
     recordedRequests.push(
       JSON.parse(JSON.stringify({ contents: request.contents, config: request.config })),
     );
-    const text = answers.shift();
-    if (text === undefined) {
+    const answer = answers.shift();
+    if (answer === undefined) {
       throw new Error('The scripted model has no answer left. Call scriptAnswers() first.');
     }
-    yield { content: { role: 'model', parts: [{ text }] }, turnComplete: true };
+    if (typeof answer === 'string') {
+      yield { content: { role: 'model', parts: [{ text: answer }] }, turnComplete: true };
+    } else if ('call' in answer) {
+      yield {
+        content: {
+          role: 'model',
+          parts: [{ functionCall: { name: answer.call, args: answer.args } }],
+        },
+        turnComplete: true,
+      };
+    } else {
+      yield {
+        content: { role: 'model', parts: [{ text: answer.text }] },
+        groundingMetadata: { webSearchQueries: answer.searchQueries },
+        turnComplete: true,
+      };
+    }
   }
 
   async connect(): Promise<BaseLlmConnection> {
