@@ -1,14 +1,30 @@
+import { stat } from 'node:fs/promises';
+import path from 'node:path';
 import { FunctionTool, type Context } from '@google/adk';
 import { z } from 'zod';
+import { DraftExistsError, listingDraftSchema, writeDraft } from '../draft/draft-file.js';
+import { PHOTO_PATH_KEY } from '../session-state.js';
 
-// TODO(ch02-1): Define the input schema of the create_listing_draft tool.
-// It needs `title`, `price`, `currency`, `category`, `condition` and
-// `description`, each with a `.describe()` text. `listingDraftSchema` in
-// `../draft/draft-file.js` already holds the rules for `price` and
-// `condition`, and `listingDraftSchema.shape` lets you reuse a field. Do not
-// add a field for a file path: the model must not decide where a file is
-// written.
-export const createListingDraftInputSchema = z.object({});
+export const createListingDraftInputSchema = z.object({
+  title: z
+    .string()
+    .min(1)
+    .describe('Listing title with brand and model first, at most 65 characters.'),
+  price: listingDraftSchema.shape.price.describe(
+    'Asking price as a number, without a currency sign.',
+  ),
+  currency: z.string().min(1).describe('ISO 4217 code of the price currency, for example "EUR".'),
+  category: z.string().min(1).describe('Category of the item, as vision_inspector returned it.'),
+  condition: listingDraftSchema.shape.condition.describe(
+    'Condition of the item: "new", "used" or "defective".',
+  ),
+  description: z
+    .string()
+    .min(1)
+    .describe(
+      'The listing text for the buyer, as plain text. Separate paragraphs by a blank line.',
+    ),
+});
 
 /**
  * Result of the tool call. This `status` says whether the call worked. It is
@@ -25,20 +41,35 @@ export type CreateListingDraftOutput = z.infer<typeof createListingDraftOutputSc
 /** The part of ADK's tool context that this tool uses: the session state. */
 export type DraftToolContext = Pick<Context, 'state'>;
 
-// TODO(ch02-2): Save the draft beside the photo.
-// Read the photo path from the session state: `toolContext.state.get(...)`
-// with `PHOTO_PATH_KEY` from `../session-state.js`. Return an error result
-// when there is no usable path or the photo file does not exist. Otherwise
-// call `writeDraft` from `../draft/draft-file.js` with the input, `image`
-// (the file name of the photo) and `status: 'draft'`, and return a success
-// result with the draft path. `writeDraft` throws `DraftExistsError` when a
-// draft is already there: turn that into an error result too. An expected
-// failure is a result the agent can report, not an exception.
 export async function createListingDraft(
   input: CreateListingDraftInput,
   toolContext?: DraftToolContext,
 ): Promise<CreateListingDraftOutput> {
-  throw new Error('createListingDraft is not implemented yet (TODO ch02-2).');
+  const photoPath = toolContext?.state.get<unknown>(PHOTO_PATH_KEY);
+  if (typeof photoPath !== 'string' || photoPath === '') {
+    return {
+      status: 'error',
+      message: `The session state has no photo path under "${PHOTO_PATH_KEY}".`,
+    };
+  }
+  const photo = await stat(photoPath).catch(() => undefined);
+  if (!photo?.isFile()) {
+    return { status: 'error', message: `The photo does not exist: ${photoPath}` };
+  }
+
+  try {
+    const draftPath = await writeDraft(photoPath, {
+      ...input,
+      image: path.basename(photoPath),
+      status: 'draft',
+    });
+    return { status: 'success', draftPath };
+  } catch (error) {
+    if (error instanceof DraftExistsError) {
+      return { status: 'error', message: `${error.message}. It was not overwritten.` };
+    }
+    throw error;
+  }
 }
 
 export const createListingDraftTool = new FunctionTool({

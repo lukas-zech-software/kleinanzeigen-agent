@@ -1,4 +1,4 @@
-import type { Session } from '@google/adk';
+import { getFunctionCalls, type Session } from '@google/adk';
 
 /**
  * One tool call of an agent run. The field names are the ones ADK's eval items use
@@ -6,11 +6,11 @@ import type { Session } from '@google/adk';
  */
 export type ToolCall = { tool_name: string; tool_input: Record<string, unknown> };
 
-// TODO(ch02-5): Read what the agent did from a session.
-// `adk run --save_session` writes a session file with every event of a run.
-// Return the tool calls of the session, in order. An event holds a function
-// call as a part of its content, and `getFunctionCalls` from `@google/adk`
-// reads them from an event. A call has a `name` and its `args`.
 export function toolCallsOf(session: Pick<Session, 'events'>): ToolCall[] {
-  throw new Error('toolCallsOf is not implemented yet (TODO ch02-5).');
+  return session.events.flatMap((event) =>
+    getFunctionCalls(event).map((call) => ({
+      tool_name: call.name ?? '',
+      tool_input: call.args ?? {},
+    })),
+  );
 }
