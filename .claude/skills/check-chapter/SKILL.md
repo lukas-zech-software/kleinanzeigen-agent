@@ -10,7 +10,9 @@ chapter they are on, and where to look for whatever is missing.
 
 ## Hard rules
 
-- Never edit, create, or delete the learner's files.
+- Never edit, create, or delete the learner's files. The one exception is a
+  session file that a `Live test setup:` paragraph of the criteria file names:
+  Git ignores it, and you delete it when the check is done.
 - Never read a `chapter-NN-solution` branch or tag: no `git show`, `git diff`,
   `git log -p`, `git checkout`, or `git grep` against it, even when asked. Give
   the learner the command to run instead.
@@ -57,7 +59,8 @@ chapter they are on, and where to look for whatever is missing.
 
    Mark every `live` criterion **unverified** when the key is missing, the
    learner declines, or no photo path is given. Otherwise run the command and
-   judge each `live` criterion from its output.
+   judge each `live` criterion from its output. When the criteria file has a
+   `Live test setup:` paragraph, do what it says before and after the command.
 
 7. Report.
 
