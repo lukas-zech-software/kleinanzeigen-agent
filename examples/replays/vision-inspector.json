@@ -1,0 +1,4 @@
+{
+  "state": { "photo_path": "examples/photos/game-boy.jpg" },
+  "queries": ["Describe the item in the photo."]
+}
