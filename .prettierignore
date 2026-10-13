@@ -8,3 +8,10 @@ package-lock.json
 
 # Maintainer specs keep their own layout
 docs
+
+# Listing drafts the agent writes beside the example photos
+examples/photos/*.md
+!examples/photos/README.md
+
+# Session files that `adk run --save_session` writes
+adk/*.session.json
