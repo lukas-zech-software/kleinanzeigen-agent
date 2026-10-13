@@ -45,7 +45,11 @@ chapter they are on, and where to look for whatever is missing.
 4. For the `typecheck` criterion, run `npx tsc --noEmit`. Met when it exits 0.
    When it fails, list the first errors with file and line.
 
-5. For `live` criteria, check that the key named in the criteria file is set:
+5. For a `script` criterion, run the script command named in the criteria
+   file. It needs no API key and uses no quota, so run it without asking. Met
+   when it exits 0. When it fails, report the check it failed from its output.
+
+6. For `live` criteria, check that the key named in the criteria file is set:
    either in the environment or as a non-empty value in `.env`. Then ask the
    learner whether to run the live test command, and for the path to a photo.
    Offer the photos in `examples/photos/` when they have none of their own.
@@ -55,7 +59,7 @@ chapter they are on, and where to look for whatever is missing.
    learner declines, or no photo path is given. Otherwise run the command and
    judge each `live` criterion from its output.
 
-6. Report.
+7. Report.
 
 ## Report format
 

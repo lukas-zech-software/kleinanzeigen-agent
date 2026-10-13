@@ -79,6 +79,18 @@ for branch in "${CHAIN[@]}"; do
       fail "$branch" "invariant 2: tsc --noEmit failed"
   fi
 
+  # Invariant 7: a solution passes its offline test, without an API key.
+  if [ -n "$number" ] && [ "$kind" = solution ]; then
+    (cd "$worktree" &&
+      env -u GEMINI_API_KEY -u GOOGLE_API_KEY -u GOOGLE_GENAI_API_KEY \
+        npm run test:offline --if-present --silent) ||
+      fail "$branch" "invariant 7: npm run test:offline failed"
+  fi
+
+  # Invariant 8: no banned API, and one ADK version in package.json, node_modules and the guides.
+  (cd "$worktree" && npm run check:apis --silent >/dev/null && npm run check:adk-version --silent >/dev/null) ||
+    fail "$branch" "invariant 8: npm run check:apis or npm run check:adk-version failed"
+
   # Invariant 6: every branch is formatted with Prettier.
   (cd "$worktree" && npx prettier --check --log-level warn .) ||
     fail "$branch" "invariant 6: prettier --check failed, run 'npm run format'"
