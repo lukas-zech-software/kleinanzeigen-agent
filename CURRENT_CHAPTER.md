@@ -1,123 +1,141 @@
-# Chapter 1: Foundation, Setup & Specialist Agents
+# Chapter 2: Listing Agent and Human Review
 
 ## What you need
 
-- Node.js 26 or newer and npm.
-- A Google AI Studio API key, stored in `.env` as `GEMINI_API_KEY`.
-- The dependencies from `npm ci`: `@google/adk`, `@google/adk-devtools`,
-  `zod`, `dotenv`, and `tsx`.
-- A photo of an item you could sell for the live test. Take your own or use
-  one from [examples/photos](examples/photos/README.md).
+- Chapter 1. This starter contains its reference solution, so you can start
+  here with or without your own. Your chapter 1 code stays on your branch.
+- Node.js 26 or newer, npm, and your `GEMINI_API_KEY` in `.env`.
+- The dependencies from `npm ci`. New in this chapter: `yaml`.
+- A photo of an item you could sell. Take your own or use one from
+  [examples/photos](examples/photos/README.md).
 
 ## Goal
 
-You build the first two agents of the listing system:
+You build the agent that turns a photo into a listing draft. It asks
+`vision_inspector` what the photo shows, asks `price_evaluator` what the item
+sells for, writes a listing text, and saves a draft: a Markdown file with
+YAML frontmatter, beside the photo.
 
-- `vision_inspector` looks at a photo and describes the item.
-- `price_evaluator` researches a realistic second-hand price range for it.
-
-Each agent does one job, and that is why there are two. In chapter 2 a third
-agent uses both of them.
+The agent never publishes anything. The draft has `status: draft`. A person
+reads it, edits it, and changes the status to `freigegeben` (German for
+"approved"). Chapter 3 picks up from there.
 
 The terms this chapter uses:
 
-- An **agent** is a model with an instruction and, optionally, tools. ADK's
-  `LlmAgent` sends the request to the model and gives you the answer as
-  events.
-- The **instruction** tells the agent what to do. The **description** tells
-  other agents what this agent is good for.
-- An **output schema** makes the agent answer with a JSON object of a fixed
-  shape. You write it with Zod.
-- The **session state** is a small key-value store that belongs to one run.
-- A **callback** is a function ADK calls at a fixed point. A before-model
-  callback runs just before a request goes to the model, and it can change
-  the request.
-- A **built-in tool** such as Google Search runs on Google's side. The model
-  decides whether it uses it.
+- **`AgentTool`** wraps an agent so that another agent can call it like a
+  tool, under its name.
+- A **function tool** is a function of yours that the agent may call. Its Zod
+  schema tells the model which arguments it takes.
+- The **tool context** is the second argument of a tool function. The session
+  state is on it.
+- A **replay file** holds the session state and the question for one run.
+  `adk run` reads it, so you can run an agent without typing.
+- A **session file** is what `adk run --save_session` writes: every event of
+  the run and the final state.
 
-Two design decisions are made for you:
+## How you work in this chapter
 
-- **The model never supplies a file path.** The photo path is stored in the
-  session state under `photo_path`. Your callback reads it there and adds the
-  photo to the request.
-- **All model calls go through ADK.** You create no Gemini client. An agent
-  gets the model as a name.
+ADK comes with the tools to run an agent and to see what it did. You do not
+write a runner, and you do not write code that prints events.
+
+```sh
+npm run agent:listing   # runs the agent with `adk run` and saves the session
+npm run agent:web       # the same agent in a web UI, with every event and the state
+npm run session:check   # checks the saved session: the tool calls and the search
+```
+
+`agent:listing` prints the question and the agent's final answer. It does not
+print the tool calls. They are in the session file,
+`adk/listing-agent.session.json`, and in the web UI.
+
+`session:check` is the one piece of checking code in this chapter, and you
+write its core in `ch02-5`. It is a stand-in: ADK 2.3 brings `adk eval`, which
+checks a run against expected tool calls without any code of yours.
 
 ## What is already there
 
-- `src/config.ts` loads `.env` and exports `GEMINI_MODEL` (default
-  `gemini-3.8-flash`, override it with `GEMINI_MODEL` in `.env`).
-- `src/session-state.ts` exports the state key `PHOTO_PATH_KEY`.
-- `src/photo.ts` exports `photoPartFor`, which reads a photo file and returns
-  it as an image part for a request.
-- `src/agents/vision-inspector.ts` and `src/agents/price-evaluator.ts` hold
-  the two agents with empty schemas and functions that throw.
-- `adk/` has one small file for each agent. The ADK command-line tools load
-  an agent from there.
-- `scripts/test-offline.ts` and `scripts/test-agents.ts` check your work.
+- `src/agents/vision-inspector.ts` and `src/agents/price-evaluator.ts`: the
+  agents from chapter 1. The price agent has one addition, the callback
+  `recordSearchQueries`. It stores the agent's Google searches in the session
+  state, because an agent that calls another agent does not see its events.
+- `src/draft/draft-file.ts`: the draft schema `listingDraftSchema`,
+  `draftPathFor`, and `writeDraft`, which never overwrites an existing draft
+  and throws `DraftExistsError` instead.
+- `src/tools/create-listing-draft.ts`: the tool definition and its output
+  schema. The input schema is empty and the function throws.
+- `src/agents/listing-agent.ts`: an agent with a name and a model.
+- `src/session/tool-calls.ts`: the type `ToolCall` and a function that throws.
+- `adk/listing_agent.ts`, `examples/replays/listing-agent.json`, and
+  `examples/expected/listing-agent.json`: what `adk run` loads, the state and
+  the question for a run, and the tool calls a good run makes.
+- `scripts/test-offline-chapter-02.ts` and `scripts/check-session.ts`: the
+  offline test and the session check.
 
 ## Your tasks
 
-Each task is marked in the code as `// TODO(ch01-k)`. Delete the comment when
+Each task is marked in the code as `// TODO(ch02-k)`. Delete the comment when
 the task is done.
 
-| Task     | File                             | What to do                                                                                                                    |
-| -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `ch01-1` | `src/agents/vision-inspector.ts` | Output schema: `title`, `detectedCategory`, `condition` (new, used, or defective), and `keyAttributes` (strings).             |
-| `ch01-2` | `src/agents/vision-inspector.ts` | The before-model callback: read `photo_path` from the session state and add the photo to the request.                         |
-| `ch01-3` | `src/agents/vision-inspector.ts` | Complete the agent: description, instruction, and the output schema.                                                          |
-| `ch01-4` | `src/agents/price-evaluator.ts`  | Output schema: the numbers `priceMin`, `priceMax`, and `recommendedPrice`, and a `currency`.                                  |
-| `ch01-5` | `src/agents/price-evaluator.ts`  | Complete the agent: description, `GOOGLE_SEARCH` as its only tool, and an instruction that makes it search and end with JSON. |
-| `ch01-6` | `src/agents/price-evaluator.ts`  | `parsePriceAnswer`: find the JSON object in the agent's answer and return it validated with the schema.                       |
+| Task     | File                                | What to do                                                                                                                                                                           |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ch02-1` | `src/tools/create-listing-draft.ts` | Input schema: `title`, `price`, `currency`, `category`, `condition`, and `description`. `price` and `condition` follow `listingDraftSchema`. No field for a file path.               |
+| `ch02-2` | `src/tools/create-listing-draft.ts` | `createListingDraft`: read `photo_path` from the session state. Return an error result when it is missing, the photo does not exist, or a draft exists. Otherwise call `writeDraft`. |
+| `ch02-3` | `src/agents/listing-agent.ts`       | Complete the agent: a description, and as tools both chapter 1 agents, each in an `AgentTool`, and `createListingDraftTool`.                                                         |
+| `ch02-4` | `src/agents/listing-agent.ts`       | The instruction: the steps, a full-sentence question for the price agent, what to do when a tool returns nothing or an error, and a final answer that names the draft file.          |
+| `ch02-5` | `src/session/tool-calls.ts`         | `toolCallsOf`: return the tool calls of a session, in order.                                                                                                                         |
 
-Three things to know before you start:
+Four things to know before you start:
 
-- **Search and an output schema do not mix.** The Gemini API rejects an
-  output schema on an agent that uses Google Search. The price agent
-  therefore answers with JSON as text, and `parsePriceAnswer` checks it.
-  Model output is untrusted input.
-- **A plausible price proves nothing.** The model can answer from memory
-  without searching. The live test reads the search queries from the answer's
-  metadata and fails when there are none.
-- **Curly braces in an instruction are placeholders.** ADK replaces a session
-  state key in curly braces with its value. Use curly braces for nothing
-  else in an instruction, and describe the JSON you want in words.
+- **The model never supplies a file path.** The photo path is in the session
+  state, as in chapter 1. `AgentTool` copies the state into the run of the
+  agent it wraps, and your tool reads it from its tool context.
+- **An expected failure is a result.** `create_listing_draft` returns
+  `{ status: 'error', message }` when a draft already exists. The agent reads
+  that and tells you. A thrown error is for a failure nobody planned for.
+- **A failing agent behind `AgentTool` returns nothing.** When
+  `vision_inspector` cannot read the photo, your agent gets an empty result,
+  not an error. Your instruction has to say what to do then, or the model may
+  make up a listing.
+- **No `.positive()` in a schema the model sees.** ADK turns it into a field
+  the Gemini API rejects. `listingDraftSchema` uses `.min(0.01)` for the
+  price, and your input schema can reuse that field.
+
+The listing language is your choice. Set it in your instruction.
 
 ## Check your work
 
 ```sh
 npm run typecheck
 npm run test:offline
-npm run test:agents -- examples/photos/game-boy.jpg
+npm run agent:listing
+npm run session:check
 ```
 
-`test:offline` needs no API key. It replaces Gemini with a scripted model and
-checks what your agents would send: the photo, the output schema, the search
-tool. On the untouched starter it stops with
-`The photo callback is not implemented yet (TODO ch01-2).`
+`test:offline` needs no API key. It runs all three agents against a scripted
+model and checks the draft your tool writes, the tools your agent declares,
+and what `toolCallsOf` returns. On the untouched starter it passes the
+chapter 1 cases and stops with
+`createListingDraft is not implemented yet (TODO ch02-2).`
 
-`test:agents` calls the Gemini API and uses your quota. It prints what both
-agents answer and the search queries the price agent ran.
+`agent:listing` calls the Gemini API and uses your quota. It works on
+`examples/photos/game-boy.jpg` and writes the draft beside it, as
+`examples/photos/game-boy.md`. Git ignores that file and the session file.
 
-To run one agent by hand:
+A draft is never overwritten. Delete `examples/photos/game-boy.md` before you
+run the agent on the same photo again, or the tool refuses and the agent
+tells you so.
 
-```sh
-npm run agent:vision   # the vision agent on examples/photos/game-boy.jpg
-npm run agent:price    # the price agent on a fixed question
-npm run agent:web      # a web UI at http://localhost:8000 to chat and inspect events
-```
-
-`agent:vision` and `agent:price` use `adk run` with a replay file from
-`examples/replays/`. The file holds the session state and the question.
+To use your own photo, change `photo_path` in
+`examples/replays/listing-agent.json`.
 
 The chapter is done when:
 
 - `npm run typecheck` reports no errors,
 - `npm run test:offline` passes,
-- `test:agents` prints a `VisionInspectorAgent result:` with plausible
-  attributes for your photo, and
-- it prints a `PriceEvaluatorAgent result:` with a numeric price range and at
-  least one search query.
+- `npm run session:check` passes after a run: three tool calls in order, at
+  least one search query, a saved draft, and
+- the draft has valid frontmatter, `status: draft`, and a price and a text
+  that fit your photo.
 
 In Claude Code, ask "is my chapter done?" for a check against each task, with
 a hint for whatever is still open.
@@ -125,8 +143,8 @@ a hint for whatever is still open.
 ## Documentation
 
 - [ADK agents](https://adk.dev/agents/llm-agents/)
-- [ADK callbacks](https://adk.dev/callbacks/types-of-callbacks/)
+- [ADK function tools and agents as tools](https://adk.dev/tools-custom/function-tools/)
 - [ADK session state](https://adk.dev/sessions/state/)
-- [Google Search tool for ADK](https://adk.dev/integrations/google-search/)
-- [Google Search grounding](https://adk.dev/grounding/google_search_grounding/)
-- [Zod](https://zod.dev/)
+- [ADK events](https://adk.dev/events/)
+- [ADK callbacks](https://adk.dev/callbacks/types-of-callbacks/)
+- [yaml](https://eemeli.org/yaml/)
