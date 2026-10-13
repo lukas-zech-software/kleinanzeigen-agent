@@ -1,0 +1,70 @@
+---
+name: adk-typescript
+description: Use when changing ADK code of this tutorial itself - an agent, a tool, a callback, a runner, a test script, or the ADK version - before writing any ADK code. Not for tutoring a learner.
+---
+
+# ADK TypeScript in this repository
+
+Your knowledge of ADK is older than the installed version, and most ADK
+material is written for Python. Do not write ADK code from memory.
+
+This skill is for maintainers' work on the tutorial. When a learner asks for
+help with a chapter, follow `AGENTS.md` and the `check-chapter` skill instead.
+
+## Procedure
+
+1. **Versions.** Run `npm run check:adk-version`. When it fails, fix that
+   first.
+2. **Read.** Open the guide for the unit you touch in
+   `docs/reference/adk-js-guides/` (start at its `README.md`). Then read the
+   type definition in `node_modules/@google/adk/dist/types`. For what the
+   guides lack, use the `adk-docs` MCP server or `https://adk.dev/llms.txt`,
+   and only the TypeScript examples.
+3. **Confirm the symbol exists.** The guides describe a newer state than the
+   release. `grep -rn "<Symbol>" node_modules/@google/adk/dist/types` must
+   find an export before you use it.
+4. **Probe.** A mechanism nobody has run in this repository is run once
+   before you build on it. Use the scripted model in
+   `scripts/support/scripted-llm.ts` for wiring, state, callbacks, and the
+   shape of a request: it needs no API key. Use one live call only for what
+   depends on Gemini itself, and ask first.
+5. **Write and typecheck.** After each change, check the editor's TypeScript
+   diagnostics or run `npm run typecheck`.
+6. **Check.** Run `npm run check` and `npm run test:offline`.
+7. **Run it.** One live run with `adk run` and a replay file, for example
+   `npm run agent:vision`, after asking, because it uses quota. `adk run`
+   prints a model error and exits with 1. `npm run agent:web` opens the web
+   UI to inspect events and state.
+
+## Limits found by running it
+
+Each of these cost a failed run. The evidence is named in
+`docs/adr/0001-model-access-through-adk.md`.
+
+- The Interactions API is banned. Never set `useInteractionsApi`.
+- No `GoogleGenAI` client. The model is a name, and ADK calls it.
+- `z.number().positive()`, `.gt()`, and `.lt()` in a schema that reaches the
+  model make the Gemini API answer 400. Use `.min()` and `.max()`.
+- `GOOGLE_SEARCH` must be the only tool of its agent, and that agent cannot
+  have an `outputSchema`. Combine it with other tools through `AgentTool`.
+- `GOOGLE_SEARCH` accepts only a model whose name starts with `gemini-`.
+- The model decides whether it searches. Read
+  `event.groundingMetadata.webSearchQueries` to know that it did.
+- `AgentTool` passes only text to the wrapped agent and copies the parent's
+  session state into its run. A photo travels through the state and a
+  before-model callback.
+- A run can fail without throwing: ADK reports a failed model call, and an
+  error thrown in a callback, as an event with `errorCode` and
+  `errorMessage`.
+- Curly braces in an instruction are placeholders for session state keys.
+
+## Commands
+
+| Command                                       | What it does                                    | API key |
+| --------------------------------------------- | ----------------------------------------------- | ------- |
+| `npm run check`                               | Guard, version check, typecheck, format check   | No      |
+| `npm run test:offline`                        | The agents against the scripted model           | No      |
+| `npm run test:agents -- <photo>`              | Both chapter 1 agents, with proof of the search | Yes     |
+| `npm run agent:vision`, `npm run agent:price` | `adk run` with a replay file                    | Yes     |
+| `npm run agent:web`                           | ADK web UI for the agents in `adk/`             | To chat |
+| `scripts/update-adk-guides.sh [ref]`          | Replaces the vendored guides                    | No      |

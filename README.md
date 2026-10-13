@@ -202,10 +202,10 @@ Want to know more about me?
 
 My code and the tutorial text are released under the [MIT License](LICENSE).
 The example photos are in the public domain or under CC0, as listed in
-[examples/photos](examples/photos/README.md). The `gemini-api-dev` skill in
-[.agents/skills](.agents/skills/gemini-api-dev) comes from
-[google-gemini/gemini-skills](https://github.com/google-gemini/gemini-skills)
-and stays under the [Apache License 2.0](LICENSES/Apache-2.0.txt).
+[examples/photos](examples/photos/README.md). The ADK developer guides in
+[docs/reference/adk-js-guides](docs/reference/adk-js-guides/SOURCE.md) come
+from [google/adk-js](https://github.com/google/adk-js) and stay under the
+[Apache License 2.0](LICENSES/Apache-2.0.txt).
 
 This project is not affiliated with, endorsed by, or connected to
 Kleinanzeigen or its operator. The name only describes the kind of listing the

@@ -34,13 +34,19 @@ agent, one chapter at a time. Chapters are Git branches, not folders;
 
 ```sh
 npm ci                                               # install dependencies
+npm run check                                        # banned-API guard, ADK version check, typecheck, format check
 npm run typecheck                                    # tsc --noEmit
-npm run test:tools -- examples/photos/game-boy.jpg   # live test of the chapter 1 tools
+npm run test:offline                                 # offline test of the chapter's agents, no API key
+npm run test:agents -- examples/photos/game-boy.jpg  # live test of the chapter 1 agents
+npm run agent:vision                                 # live run of one agent with `adk run` and a replay file
+npm run agent:web                                    # ADK web UI for the agents in adk/
 npm run format                                       # format every file with Prettier
 ```
 
-`test:tools` calls the Gemini API and uses the learner's quota. Ask before you
-run it. `examples/photos/` has photos to test with when the learner has none.
+`test:agents`, `agent:vision`, and `agent:price` call the Gemini API and use
+the learner's quota. Ask before you run one of them. `test:offline` and
+`check` need no key and no quota. `examples/photos/` has photos to test with
+when the learner has none.
 
 ## Checking a chapter: the `check-chapter` skill
 
@@ -62,9 +68,51 @@ Prettier decides the formatting (`.prettierrc.json`). Run `npm run format`
 after you edit files, and do not reformat by hand. The project is ESM
 TypeScript in strict mode: relative imports end in `.js`.
 
-## Gemini API Guidelines
+## ADK rules
 
-- Before writing Gemini API code, consult the `geminiDocs` MCP server (`gemini_search_docs` / `gemini_get_doc`) or `https://ai.google.dev/gemini-api/docs/llms.txt`.
-- Always use the current Gemini API SDK (`google-genai` for Python, `@google/genai` for TypeScript/JavaScript). Never use legacy SDKs (`google-generativeai` or `@google/generative-ai`).
-- Use the Interactions API (`client.interactions.create`) for new applications unless a specific feature requires `generateContent`.
-- Use current recommended models (see https://ai.google.dev/gemini-api/docs/models) and avoid deprecated models.
+These rules apply to every change of ADK code in this repository. The reasons
+are in [ADR 0001](docs/adr/0001-model-access-through-adk.md). When you change
+the tutorial's own ADK code, follow the `adk-typescript` skill: Claude Code
+loads it from `.claude/skills/adk-typescript/`, any other agent reads
+`.claude/skills/adk-typescript/SKILL.md`.
+
+1. **Read before you write.** Before you implement anything with ADK, read
+   the documentation. Treat what you remember about ADK as obsolete until you
+   have. The sources, in this order:
+   - the guides in `docs/reference/adk-js-guides/` (TypeScript only),
+   - the `adk-docs` MCP server from `.mcp.json`, or
+     `https://adk.dev/llms.txt` when you have no MCP,
+   - the type definitions in `node_modules/@google/adk/dist/types`.
+2. **Check the versions first.** Run `npm run check:adk-version`. The
+   installed `@google/adk`, the version in `package.json`, and the version the
+   guides were checked against must match. A symbol counts only when the
+   installed type definitions export it: the guides describe a newer state
+   than the release, see `docs/reference/adk-js-guides/SOURCE.md`. On adk.dev,
+   use what is shown for TypeScript.
+3. **Probe what nobody has run.** A mechanism that has not been run in this
+   repository is run once, as cheaply as possible, before a spec, a plan, or
+   a chapter depends on it. An offline run with the scripted model in
+   `scripts/support/scripted-llm.ts` costs no quota.
+4. **Validate with TypeScript.** After every change, use the TypeScript
+   language service of the editor where it is available, and otherwise
+   `npm run typecheck`.
+5. **No Interactions API.** It is banned until the maintainer lifts the ban
+   by hand. This includes ADK's `useInteractionsApi` option.
+6. **ADK is the only layer that calls the model.** Create no `GoogleGenAI`
+   client. Give the model as a name. Take types from `@google/adk`. An import
+   from `@google/genai` is allowed only when a value cannot be typed
+   otherwise, and the line above it is a comment that starts with
+   `// genai-import:` and gives the reason.
+7. **Schemas that reach the model** use no `.positive()`, `.gt()`, or
+   `.lt()`. ADK turns them into a field the Gemini API rejects. Use `.min()`
+   and `.max()`.
+8. **Skills for other stacks do not apply here.** `gemini-api-dev` is written
+   for the `@google/genai` SDK, and the `google-agents-cli-*` skills for ADK
+   in Python and Go. Do not follow them in this repository.
+
+`npm run check:apis` enforces rules 5 and 6, and `npm run test:offline`
+checks rule 7 for the schemas of the chapter.
+
+Open work: ADK 2.3.0 will bring `adk eval`. When `npm view @google/adk
+version` reports it, follow "Upgrading ADK" in
+[CONTRIBUTING.md](CONTRIBUTING.md).
