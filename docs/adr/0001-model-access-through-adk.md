@@ -148,6 +148,30 @@ handed over:
   output schema. Decision 5 applies to the vision schema and to tool
   parameters, not to it.
 
+## Findings for chapter 2
+
+Found on 2026-10-13, first offline with the scripted model and then in three
+live runs of the chapter 2 reference solution:
+
+- **A failed sub-agent is an empty result.** When the run of an agent behind
+  `AgentTool` ends in an error event, `AgentTool` returns an empty string.
+  The calling agent sees `{"result": ""}` and no error. Its instruction has
+  to say what to do then. In the live run with a missing photo the agent
+  stopped and said that `vision_inspector` returned nothing.
+- **State flows back through `AgentTool`.** A value the wrapped agent writes
+  into the session state appears in the calling agent's state and in the
+  session file. The price agent uses this to hand back its search queries.
+- **A sub-agent's events are not in the caller's session.** `AgentTool` runs
+  the wrapped agent in a session of its own. The saved session of the listing
+  agent shows the call and its result, and nothing of what happened inside.
+- **`adk run --log_level` does not silence the agent's ADK.** The CLI sets
+  the level on its own copy of ADK, and the agent file loads another one. The
+  level is set in the agent's entry file with `setLogLevel`.
+- **`adk run --replay --save_session` is a complete non-interactive run.** It
+  takes the state and the query from a file and writes every event and the
+  final state to `<session_id>.session.json` beside the agent file. On the
+  console it prints the final answer and errors, and no tool calls.
+
 ## Consequences
 
 - `AGENTS.md` states decisions 1, 2, and 5 as rules.

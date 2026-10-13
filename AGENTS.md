@@ -39,14 +39,18 @@ npm run typecheck                                    # tsc --noEmit
 npm run test:offline                                 # offline test of the chapter's agents, no API key
 npm run test:agents -- examples/photos/game-boy.jpg  # live test of the chapter 1 agents
 npm run agent:vision                                 # live run of one agent with `adk run` and a replay file
+npm run agent:listing                                # live run of the chapter 2 agent, saves a session file
+npm run session:check                                # checks the saved session: tool calls and search
 npm run agent:web                                    # ADK web UI for the agents in adk/
 npm run format                                       # format every file with Prettier
 ```
 
-`test:agents`, `agent:vision`, and `agent:price` call the Gemini API and use
-the learner's quota. Ask before you run one of them. `test:offline` and
-`check` need no key and no quota. `examples/photos/` has photos to test with
-when the learner has none.
+`test:agents`, `agent:vision`, `agent:price`, and `agent:listing` call the
+Gemini API and use the learner's quota. Ask before you run one of them.
+`agent:listing` also writes a draft beside the photo and a session file in
+`adk/`. Git ignores both, and an existing draft makes the next run refuse.
+`test:offline`, `session:check`, and `check` need no key and no quota.
+`examples/photos/` has photos to test with when the learner has none.
 
 ## Checking a chapter: the `check-chapter` skill
 

@@ -25,6 +25,7 @@ then a written design that I reviewed.
 - [Git concept, validation skill, and chapter 1](superpowers/specs/2026-10-07-tutorial-git-concept-design.md)
 - [Public release](superpowers/specs/2026-10-10-public-release-design.md)
 - [ADK-only foundation and chapter 1](superpowers/specs/2026-10-13-adk-only-foundation-chapter-01-design.md)
+- [Chapter 2: listing agent and human review](superpowers/specs/2026-10-13-chapter-02-listing-agent-design.md)
 
 The specs record decisions and what was left out on purpose. The second one,
 for example, records the decision that chapter 3 stops before posting a

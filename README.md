@@ -17,8 +17,8 @@ away the solution.
 I am building it to teach myself ADK and the Google services around it, and I
 publish it so that other developers can learn the same way.
 
-> **Status:** chapter 1 of 4 is available. Chapters 2 to 4 are planned. See the
-> [roadmap](docs/roadmap.md).
+> **Status:** chapters 1 and 2 of 4 are available. Chapters 3 and 4 are
+> planned. See the [roadmap](docs/roadmap.md).
 
 - **Here to learn?** Go to the [Quick start](#quick-start).
 - **Here to see how it is built?** Take the [guided tour](#guided-tour).
@@ -46,12 +46,12 @@ flowchart LR
 
 Chapter 4 moves the same pipeline to Google Cloud, where a new photo starts it.
 
-| Chapter | You learn                                                               | Status    |
-| ------- | ----------------------------------------------------------------------- | --------- |
-| 1       | ADK agents with structured output, a callback, and search grounding     | Available |
-| 2       | An agent that uses the tools and writes a draft for a person to review  | Planned   |
-| 3       | A second agent that validates an approved draft and hands it to a human | Planned   |
-| 4       | Cloud Run services started by storage events through Eventarc           | Planned   |
+| Chapter | You learn                                                                | Status    |
+| ------- | ------------------------------------------------------------------------ | --------- |
+| 1       | ADK agents with structured output, a callback, and search grounding      | Available |
+| 2       | An agent that uses both agents, a tool with session state, ADK dev tools | Available |
+| 3       | A second agent that validates an approved draft and hands it to a human  | Planned   |
+| 4       | Cloud Run services started by storage events through Eventarc            | Planned   |
 
 The agent never posts a listing. It prepares and checks one, and a person
 decides. The [roadmap](docs/roadmap.md) describes each chapter.
@@ -150,7 +150,16 @@ git diff chapter-01-starter-v4 chapter-01-solution-v4
 ```
 
 Start the next chapter from its own starter tag. Your work stays on your
-branch.
+branch. For chapter 2:
+
+```sh
+git switch -c my-chapter-02 chapter-02-starter-v4
+npm ci
+```
+
+In chapter 2 you run the agent with ADK's own tools: `npm run agent:listing`
+runs it with `adk run` and saves the session, `npm run agent:web` shows every
+event in a web UI, and `npm run session:check` checks the saved session.
 
 ## Guided tour
 

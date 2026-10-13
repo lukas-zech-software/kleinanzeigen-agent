@@ -6,11 +6,11 @@ layer and leaves you with something that runs.
 | Chapter | Topic                                   | Status    |
 | ------- | --------------------------------------- | --------- |
 | 1       | Foundation, setup and specialist agents | Available |
-| 2       | Listing agent and human review          | Planned   |
+| 2       | Listing agent and human review          | Available |
 | 3       | Publisher agent and human handoff       | Planned   |
 | 4       | Cloud deployment with events            | Planned   |
 
-Chapters 2 to 4 are planned. Their content may change while they are written.
+Chapters 3 and 4 are planned. Their content may change while they are written.
 
 ## Chapter 1: Foundation, setup and specialist agents
 
@@ -51,21 +51,27 @@ with at least one search query the price agent ran.
 draft is a Markdown file with YAML frontmatter, saved beside the photo. A
 status field in the frontmatter (`status: draft` or `status: freigegeben`,
 German for "approved") is the only link between the agent and the person, so
-no server session has to stay alive.
+no server session has to stay alive. You run and inspect the agent with ADK's
+own dev tools and write no runner.
 
 **You implement:**
 
-- the listing agent: instruction, model, and the two agents as its tools,
-- a `create_listing_draft` tool that saves the frontmatter and the listing
-  text beside the photo,
-- the run for one photo and the output that shows what the agent did.
+- the input schema of the `create_listing_draft` tool,
+- the tool, which reads the photo path from the session state and saves the
+  draft beside the photo,
+- the listing agent with both chapter 1 agents and the tool,
+- its instruction, including what it does when a tool returns nothing,
+- a function that reads the tool calls from a saved session.
 
-**Done when:** running the agent on a photo creates a draft file beside it
-with valid frontmatter, `status: draft`, and a price and description that
-match the photo.
+**Done when:** `npm run test:offline` passes, and after `npm run
+agent:listing` the session check passes and the draft beside the photo has
+valid frontmatter, `status: draft`, and a price and description that match
+the photo.
 
 **Docs:** [ADK agents](https://adk.dev/agents/llm-agents/),
-[ADK function tools](https://adk.dev/tools-custom/function-tools/).
+[ADK function tools](https://adk.dev/tools-custom/function-tools/),
+[ADK session state](https://adk.dev/sessions/state/),
+[ADK events](https://adk.dev/events/).
 
 ## Chapter 3: Publisher agent and human handoff
 
