@@ -28,7 +28,7 @@ publish it so that other developers can learn the same way.
 ```mermaid
 flowchart LR
   photo([Photo of an item])
-  subgraph ch1 ["Chapter 1: tools"]
+  subgraph ch1 ["Chapter 1: agents"]
     vision[Vision inspector]
     price[Price evaluator]
   end
@@ -48,7 +48,7 @@ Chapter 4 moves the same pipeline to Google Cloud, where a new photo starts it.
 
 | Chapter | You learn                                                               | Status    |
 | ------- | ----------------------------------------------------------------------- | --------- |
-| 1       | ADK tools with typed Zod schemas, structured output, search grounding   | Available |
+| 1       | ADK agents with structured output, a callback, and search grounding     | Available |
 | 2       | An agent that uses the tools and writes a draft for a person to review  | Planned   |
 | 3       | A second agent that validates an approved draft and hands it to a human | Planned   |
 | 4       | Cloud Run services started by storage events through Eventarc           | Planned   |
@@ -64,13 +64,15 @@ You need:
 - a Google AI Studio API key, which you create at
   [aistudio.google.com/apikey](https://aistudio.google.com/apikey),
 - some experience with TypeScript. You do not need to know ADK.
+- optionally [uv](https://docs.astral.sh/uv/), when your coding agent should
+  read the ADK documentation through the MCP server in `.mcp.json`.
 
 Clone the repository and start chapter 1 from its starter tag:
 
 ```sh
 git clone https://github.com/lukas-zech-software/kleinanzeigen-agent.git
 cd kleinanzeigen-agent
-git switch -c my-chapter-01 chapter-01-starter-v3
+git switch -c my-chapter-01 chapter-01-starter-v4
 npm ci
 cp .env.example .env    # then add your GEMINI_API_KEY
 ```
@@ -82,31 +84,31 @@ Check your work at any time:
 
 ```sh
 npm run typecheck
-npm run test:tools -- examples/photos/game-boy.jpg
+npm run test:offline
+npm run test:agents -- examples/photos/game-boy.jpg
 ```
 
-`test:tools` calls the Gemini API and uses your quota. On the untouched starter
-it stops with `inspectImage is not implemented yet (TODO ch01-3).` That is
-your starting point.
+`test:offline` needs no API key: it runs your agents against a scripted model
+and checks what they would send to Gemini. `test:agents` calls the Gemini API
+and uses your quota. On the untouched starter both stop with
+`The photo callback is not implemented yet (TODO ch01-2).` That is your
+starting point.
 
-When chapter 1 is finished, the same command prints something like this:
+When chapter 1 is finished, `test:agents` prints something like this:
 
 ```
-Tools under test: vision_inspector, price_evaluator
-VisionInspectorTool result: {
-  title: 'Original Nintendo Game Boy DMG-01 Handheld Console Classic Grey',
-  detectedCategory: 'Handheld Game Consoles',
+Agents under test: vision_inspector, price_evaluator
+VisionInspectorAgent result: {
+  title: 'Nintendo Game Boy DMG-01 Handheld Console Grey',
+  detectedCategory: 'Handheld Consoles',
   condition: 'used',
-  keyAttributes: [
-    'Nintendo',
-    'Game Boy',
-    'DMG-01',
-    'Grey',
-    'Vintage Handheld System',
-    '8-bit'
-  ]
+  keyAttributes: [ 'Nintendo', 'Game Boy', 'DMG-01', 'Grey' ]
 }
-PriceEvaluatorTool result: { priceMin: 65, priceMax: 130, recommendedPrice: 90, currency: 'EUR' }
+PriceEvaluatorAgent result: { priceMin: 65, priceMax: 120, recommendedPrice: 85, currency: 'EUR' }
+Search queries: [
+  'Nintendo Game Boy classic DMG 01 grau verkauft preis ebay',
+  'Nintendo Game Boy DMG 01 grau gebraucht preis ebay de sold kleinanzeigen'
+]
 ```
 
 [examples/photos](examples/photos/README.md) has five freely licensed photos
@@ -124,7 +126,7 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
   you do is marked as `// TODO(chNN-k)`.
 - `chapter-NN-solution` is a reference implementation. Read it as an example
   and not as the only right answer.
-- Tags such as `chapter-01-starter-v3` are fixed snapshots. Branches may be
+- Tags such as `chapter-01-starter-v4` are fixed snapshots. Branches may be
   rebased when the tutorial is corrected. Tags never move.
 
 On a chapter branch, [CURRENT_CHAPTER.md](CURRENT_CHAPTER.md) describes that
@@ -144,7 +146,7 @@ with the branch.
 To see the reference solution:
 
 ```sh
-git diff chapter-01-starter-v3 chapter-01-solution-v3
+git diff chapter-01-starter-v4 chapter-01-solution-v4
 ```
 
 Start the next chapter from its own starter tag. Your work stays on your
@@ -168,6 +170,10 @@ reading:
   names the gap, and gives a hint. It is forbidden to read the solution.
 - **[AGENTS.md](AGENTS.md).** The rules that make any coding agent behave as a
   tutor here and not as a code generator.
+- **[ADR 0001](docs/adr/0001-model-access-through-adk.md).** Why every model
+  call goes through ADK, with the probe behind each decision. A
+  [guard script](scripts/check-banned-apis.sh) and an offline test with a
+  scripted model keep it that way.
 - **[How this was built](docs/how-this-was-built.md).** The workflow behind the
   repository: design spec, implementation plan, verified chain. The design
   specs are in [docs/superpowers/specs](docs/superpowers/specs).

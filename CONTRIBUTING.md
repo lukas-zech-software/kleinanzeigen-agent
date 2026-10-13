@@ -44,8 +44,8 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
 5. Cut the next release on every chain branch, for example:
 
    ```sh
-   git tag -a chapter-01-starter-v3 chapter-01-starter -m "Chapter 1 starter, release v3"
-   git tag -a chapter-01-solution-v3 chapter-01-solution -m "Chapter 1 solution, release v3"
+   git tag -a chapter-01-starter-v4 chapter-01-starter -m "Chapter 1 starter, release v4"
+   git tag -a chapter-01-solution-v4 chapter-01-solution -m "Chapter 1 solution, release v4"
    ```
 
 6. Push: `git push --force-with-lease origin main chapter-01-starter chapter-01-solution`
@@ -62,3 +62,34 @@ the starter with the chapter's content. Its first line must be
 
 Design specs live in `docs/superpowers/specs/`. Implementation plans stay on a
 maintainer branch and off the chain: they quote the reference solutions.
+
+## Checks
+
+```sh
+npm run check          # banned-API guard, ADK version check, typecheck, format check
+npm run test:offline   # the chapter's agents against a scripted model, on a chapter branch
+```
+
+Both need no API key. `scripts/verify-chain.sh` runs the guard and the version
+check on every branch, and the offline test on every solution branch.
+
+The rules behind the guard are in `AGENTS.md` under "ADK rules", and the
+reasons in [ADR 0001](docs/adr/0001-model-access-through-adk.md).
+
+## Upgrading ADK
+
+`@google/adk` and `@google/adk-devtools` are pinned to one exact version,
+because the guides in `docs/reference/adk-js-guides/` are checked against it.
+
+1. Set both packages to the new version in `package.json` on `main` and run
+   `npm install`.
+2. Run `scripts/update-adk-guides.sh`. Then update the list of missing
+   symbols in `docs/reference/adk-js-guides/SOURCE.md`: a symbol counts only
+   when `node_modules/@google/adk/dist/types` exports it.
+3. Replay the chain. On every chapter starter, run `npm install` so that the
+   lock file follows.
+4. Run `npm run check` and `npm run test:offline` on every chapter branch,
+   and the live tests on every solution.
+
+ADK 2.3.0 brings `adk eval`. When it is on npm, the tool call checks of the
+chapters move to eval sets.

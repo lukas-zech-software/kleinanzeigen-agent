@@ -24,6 +24,7 @@ then a written design that I reviewed.
 
 - [Git concept, validation skill, and chapter 1](superpowers/specs/2026-10-07-tutorial-git-concept-design.md)
 - [Public release](superpowers/specs/2026-10-10-public-release-design.md)
+- [ADK-only foundation and chapter 1](superpowers/specs/2026-10-13-adk-only-foundation-chapter-01-design.md)
 
 The specs record decisions and what was left out on purpose. The second one,
 for example, records the decision that chapter 3 stops before posting a
@@ -70,3 +71,7 @@ Two files turn a coding agent into a tutor for the learner:
   and a way to check its own work. `AGENTS.md` and the verification script are
   that.
 - A check that a script can run beats a rule that someone has to remember.
+- Probe before you specify. A feature that is documented for another
+  language, or that only exists as an option in a type definition, is not a
+  feature until it has run here.
+  [ADR 0001](adr/0001-model-access-through-adk.md) records what that cost.

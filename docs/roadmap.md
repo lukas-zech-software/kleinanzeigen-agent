@@ -3,68 +3,69 @@
 The tutorial builds one agent across four chapters. Each chapter adds one
 layer and leaves you with something that runs.
 
-| Chapter | Topic                             | Status    |
-| ------- | --------------------------------- | --------- |
-| 1       | Foundation, setup and tool design | Available |
-| 2       | Listing agent and human review    | Planned   |
-| 3       | Publisher agent and human handoff | Planned   |
-| 4       | Cloud deployment with events      | Planned   |
+| Chapter | Topic                                   | Status    |
+| ------- | --------------------------------------- | --------- |
+| 1       | Foundation, setup and specialist agents | Available |
+| 2       | Listing agent and human review          | Planned   |
+| 3       | Publisher agent and human handoff       | Planned   |
+| 4       | Cloud deployment with events            | Planned   |
 
 Chapters 2 to 4 are planned. Their content may change while they are written.
 
-## Chapter 1: Foundation, setup and tool design
+## Chapter 1: Foundation, setup and specialist agents
 
 **You need:** Node.js 26 or newer, npm, and a Google AI Studio API key in
 `GEMINI_API_KEY`.
 
-**Goal:** Two ADK tools with typed interfaces. `VisionInspectorTool` describes
-the item in a photo. `PriceEvaluatorTool` researches a realistic second-hand
-price range. An agent can only decide well when its tools have clear input and
-output schemas, so each tool gets a Zod schema for both.
+**Goal:** Two ADK agents, each with one job. `vision_inspector` describes the
+item in a photo as structured output. `price_evaluator` researches a
+realistic second-hand price range with Google Search. Every model call goes
+through ADK: you create no Gemini client.
 
 **You implement:**
 
-- the input and output schema of each tool,
-- the multimodal call that turns a photo into structured JSON, using the
-  current Gemini Flash model set in `src/config.ts`,
-- the price research, for example with Gemini and Google Search grounding.
+- the output schema of each agent, in Zod,
+- a before-model callback that reads the photo path from the session state
+  and adds the photo to the request,
+- both agents: description, instruction, the output schema or the search
+  tool,
+- the function that turns the price agent's text answer into a validated
+  object.
 
-**Done when:** `npm run typecheck` passes and `npm run test:tools` prints a
-valid result from each tool for a photo.
+**Done when:** `npm run typecheck` and `npm run test:offline` pass, and
+`npm run test:agents` prints a valid result from each agent for a photo,
+with at least one search query the price agent ran.
 
-**Docs:** [ADK multi-tool agent tutorial](https://adk.dev/tutorials/multi-tool-agent/),
-[ADK tool concepts and schemas](https://adk.dev/live/tools/),
-[Gemini image understanding](https://ai.google.dev/gemini-api/docs/image-understanding),
-[Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output),
-[Grounding with Google Search](https://ai.google.dev/gemini-api/docs/google-search),
+**Docs:** [ADK agents](https://adk.dev/agents/llm-agents/),
+[ADK callbacks](https://adk.dev/callbacks/types-of-callbacks/),
+[ADK session state](https://adk.dev/sessions/state/),
+[Google Search tool for ADK](https://adk.dev/integrations/google-search/),
 [Zod](https://zod.dev/).
 
 ## Chapter 2: Listing agent and human review
 
-**You need:** chapter 1, plus access to a Google Drive folder through a
-service account (`GOOGLE_APPLICATION_CREDENTIALS`, `GDRIVE_WATCH_FOLDER_ID`).
+**You need:** chapter 1. Nothing else: the draft is a local file.
 
-**Goal:** The first agent. It uses the two tools from chapter 1 and writes a
-listing draft that a person can read and edit. The draft is a Markdown file
-with YAML frontmatter. A status field in the frontmatter (`status: draft` or
-`status: freigegeben`, German for "approved") is the only link between the
-agent and the person, so no server session has to stay alive.
+**Goal:** A third agent that uses the two agents from chapter 1 through
+`AgentTool` and writes a listing draft that a person can read and edit. The
+draft is a Markdown file with YAML frontmatter, saved beside the photo. A
+status field in the frontmatter (`status: draft` or `status: freigegeben`,
+German for "approved") is the only link between the agent and the person, so
+no server session has to stay alive.
 
 **You implement:**
 
-- the agent definition: instruction, model, and the registered tools,
-- a `create_listing_draft` tool that writes the frontmatter (`title`, `price`,
-  `category`, `status: "draft"`) and the listing text, and saves the file next
-  to the photo in Google Drive,
-- the orchestration: inspect the photo, choose search terms for the price,
-  write the description, save the draft.
+- the listing agent: instruction, model, and the two agents as its tools,
+- a `create_listing_draft` tool that saves the frontmatter and the listing
+  text beside the photo,
+- the run for one photo and the output that shows what the agent did.
 
-**Done when:** running the agent on a photo in the Drive folder creates a
-draft file beside it with valid frontmatter, `status: draft`, and a price and
-description that match the photo.
+**Done when:** running the agent on a photo creates a draft file beside it
+with valid frontmatter, `status: draft`, and a price and description that
+match the photo.
 
-**Docs:** [ADK agents](https://adk.dev/agents/),
-[Google Drive API for Node.js](https://developers.google.com/workspace/drive/api/quickstart/nodejs).
+**Docs:** [ADK agents](https://adk.dev/agents/llm-agents/),
+[ADK function tools](https://adk.dev/tools-custom/function-tools/).
 
 ## Chapter 3: Publisher agent and human handoff
 
@@ -112,7 +113,7 @@ them.
 - a multi-stage `Dockerfile` for the TypeScript services,
 - two Cloud Run services: one that creates the draft and one that prepares the
   package,
-- a Cloud Storage bucket in place of the Drive folder, with Eventarc triggers:
+- a Cloud Storage bucket in place of the local folder, with Eventarc triggers:
   a new image starts the first service, an updated draft starts the second.
 
 **Done when:** uploading a photo to the bucket produces a draft, and uploading
