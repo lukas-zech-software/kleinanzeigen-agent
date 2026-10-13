@@ -15,20 +15,28 @@
     "build": "npm run check:apis && tsc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run check:apis && npm run check:adk-version && npm run format:check",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run check:apis && npm run check:adk-version && npm run typecheck && npm run format:check",
     "check:apis": "scripts/check-banned-apis.sh",
-    "check:adk-version": "scripts/check-adk-version.sh"
+    "check:adk-version": "scripts/check-adk-version.sh",
+    "test:offline": "tsx scripts/test-offline.ts",
+    "test:agents": "tsx scripts/test-agents.ts",
+    "agent:vision": "adk run adk/vision_inspector.ts --replay examples/replays/vision-inspector.json",
+    "agent:price": "adk run adk/price_evaluator.ts --replay examples/replays/price-evaluator.json",
+    "agent:web": "adk web adk"
   },
   "dependencies": {
-    "@google/adk": "2.3.0"
+    "@google/adk": "2.2.1",
+    "dotenv": "^18.0.6",
+    "zod": "^4.6.5"
   },
   "private": true,
   "devDependencies": {
-    "@google/adk-devtools": "2.3.0",
+    "@google/adk-devtools": "2.2.1",
+    "@types/node": "^26.6.4",
     "prettier": "3.9.9",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
-  "overrides": {
-    "tedious": "^20.3.7"
-  }
+  "type": "module"
 }
