@@ -17,8 +17,8 @@ away the solution.
 I am building it to teach myself ADK and the Google services around it, and I
 publish it so that other developers can learn the same way.
 
-> **Status:** chapters 1 to 3 of 4 are available. Chapter 4 is planned. See
-> the [roadmap](docs/roadmap.md).
+> **Status:** all four chapters are available. See the
+> [roadmap](docs/roadmap.md).
 
 - **Here to learn?** Go to the [Quick start](#quick-start).
 - **Here to see how it is built?** Take the [guided tour](#guided-tour).
@@ -44,14 +44,15 @@ flowchart LR
   photo --> vision --> price --> draft --> review --> package --> post
 ```
 
-Chapter 4 moves the same pipeline to Google Cloud, where a new photo starts it.
+Chapter 4 moves the same pipeline to Google Cloud: a photo uploaded to a bucket
+starts it, and the approved draft uploaded again finishes it.
 
 | Chapter | You learn                                                                | Status    |
 | ------- | ------------------------------------------------------------------------ | --------- |
 | 1       | ADK agents with structured output, a callback, and search grounding      | Available |
 | 2       | An agent that uses both agents, a tool with session state, ADK dev tools | Available |
 | 3       | A second agent that validates an approved draft and hands it to a human  | Available |
-| 4       | Cloud Run services started by storage events through Eventarc            | Planned   |
+| 4       | ADK's API server on Cloud Run, started by storage events via Eventarc    | Available |
 
 The agent never posts a listing. It prepares and checks one, and a person
 decides. The [roadmap](docs/roadmap.md) describes each chapter.
@@ -72,7 +73,7 @@ Clone the repository and start chapter 1 from its starter tag:
 ```sh
 git clone https://github.com/lukas-zech-software/kleinanzeigen-agent.git
 cd kleinanzeigen-agent
-git switch -c my-chapter-01 chapter-01-starter-v5
+git switch -c my-chapter-01 chapter-01-starter-v6
 npm ci
 cp .env.example .env    # then add your GEMINI_API_KEY
 ```
@@ -123,10 +124,10 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
 ```
 
 - `chapter-NN-starter` has the types and boilerplate for a chapter. The work
-  you do is marked as `// TODO(chNN-k)`.
+  you do is marked as `TODO(chNN-k)`, in a comment.
 - `chapter-NN-solution` is a reference implementation. Read it as an example
   and not as the only right answer.
-- Tags such as `chapter-01-starter-v5` are fixed snapshots. Branches may be
+- Tags such as `chapter-01-starter-v6` are fixed snapshots. Branches may be
   rebased when the tutorial is corrected. Tags never move.
 
 On a chapter branch, [CURRENT_CHAPTER.md](CURRENT_CHAPTER.md) describes that
@@ -146,14 +147,14 @@ with the branch.
 To see the reference solution:
 
 ```sh
-git diff chapter-01-starter-v5 chapter-01-solution-v5
+git diff chapter-01-starter-v6 chapter-01-solution-v6
 ```
 
 Start the next chapter from its own starter tag. Your work stays on your
 branch. For chapter 2:
 
 ```sh
-git switch -c my-chapter-02 chapter-02-starter-v5
+git switch -c my-chapter-02 chapter-02-starter-v6
 npm ci
 ```
 
@@ -164,12 +165,23 @@ event in a web UI, and `npm run session:check` checks the saved session.
 For chapter 3:
 
 ```sh
-git switch -c my-chapter-03 chapter-03-starter-v5
+git switch -c my-chapter-03 chapter-03-starter-v6
 npm ci
 ```
 
 In chapter 3 you add `npm run eval:publisher`: it runs eval cases you write
 against the agent, with ADK's eval runner.
+
+For chapter 4:
+
+```sh
+git switch -c my-chapter-04 chapter-04-starter-v6
+npm ci
+```
+
+Chapter 4 also needs the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+and a Google Cloud project with billing. Its scripts in `cloud/` print every
+`gcloud` command they run, and `cloud/teardown.sh` removes everything again.
 
 ## Guided tour
 

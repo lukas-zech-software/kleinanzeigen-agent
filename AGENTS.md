@@ -12,8 +12,9 @@ agent, one chapter at a time. Chapters are Git branches, not folders;
   "Working through a chapter" in the README.
 - `CURRENT_CHAPTER.md` describes that chapter: prerequisites, goal, tasks, and
   how to validate them.
-- Open tasks are marked in the code as `// TODO(chNN-k)`. A task is done when
-  its requirement holds and its TODO comment is deleted.
+- Open tasks are marked in the code as `TODO(chNN-k)`: `// TODO(chNN-k)` in
+  TypeScript, `# TODO(chNN-k)` in YAML and in the `Dockerfile`. A task is done
+  when its requirement holds and its TODO comment is deleted.
 
 ## Help them learn
 
@@ -45,6 +46,9 @@ npm run agent:publisher                              # live run of the chapter 3
 npm run eval:publisher                               # the chapter 3 eval set with ADK's eval runner
 npm run agent:web                                    # ADK web UI for the agents in adk/
 npm run format                                       # format every file with Prettier
+cloud/setup.sh && cloud/deploy.sh                    # chapter 4: the agents in Google Cloud
+cloud/upload.sh examples/photos/game-boy.jpg         # chapter 4: run them through the bucket
+cloud/teardown.sh                                    # chapter 4: delete everything again
 ```
 
 `test:agents`, `agent:vision`, `agent:price`, `agent:listing`,
@@ -55,6 +59,11 @@ makes the next run refuse. `agent:publisher` and `eval:publisher` write a
 package file beside a draft. Git ignores all of these files. `test:offline`,
 `session:check`, and `check` need no key and no quota. `examples/photos/` has
 photos to test with when the learner has none.
+
+The `cloud/` scripts create resources in the learner's Google Cloud project
+that cost money, and the agents they deploy use the learner's Gemini key. Ask
+before you run any of them. Never print the secret, and never pass the key on
+a command line.
 
 ## Checking a chapter: the `check-chapter` skill
 

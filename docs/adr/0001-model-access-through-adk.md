@@ -230,6 +230,75 @@ not use `sprintf-js`. Four high-severity findings remain through `braces`
 (via `fast-glob`), for which no fixed release exists either. They concern the
 dev tools, not the tutorial's code.
 
+## Chapter 4: Cloud Run
+
+Checked on 2026-10-14 in a Google Cloud project, region `europe-west1`, with
+ADK 2.3.0 and `gcloud` 575.0.0: first piece by piece, then from a clean
+project with the chapter's scripts. The evidence is in
+`docs/debugging/2026-10-14-chapter-04-cloud/` on the maintainer branch.
+
+### 11. Our own Dockerfile, not `adk deploy cloud_run`
+
+ADK's deploy command bundles each agent file with esbuild and copies only the
+bundles. The API server in its container bundles them again, and every agent
+fails to load with "Identifier 'Module' has already been declared":
+`/list-apps` answers `[]`. Its pass-through of `gcloud` flags is broken as
+well: the agent path and `--` are passed on to `gcloud`, and without them the
+first unknown flag is taken as the agents folder. Its Dockerfile installs
+`@google/adk-devtools@latest`, not the project's version.
+
+The chapter's `Dockerfile` installs the locked dependencies with `npm ci`
+and runs `npx adk api_server adk`, the same dev tool as `adk web`.
+`gcloud run deploy --source` builds it with Cloud Build. ADK compiles the
+agents when the server starts, which needs more than the default 512 MiB;
+the service gets 2 GiB.
+
+### 12. In the cloud the agents use the Gemini API key, not Vertex AI
+
+The Dockerfile that `adk deploy cloud_run` writes sets
+`GOOGLE_GENAI_USE_ENTERPRISE=1`, `GOOGLE_CLOUD_PROJECT`, and
+`GOOGLE_CLOUD_LOCATION`. With that variable true, ADK's Gemini model calls
+Vertex AI, billed to the Cloud project, and ignores `GEMINI_API_KEY`
+(`isEnterpriseModeEnabled` in `utils/env_aware_utils.js`, `geminiInitParams`
+in `models/google_llm.js`). The command does not say so.
+
+The maintainer decided that the deployed agents keep using the Gemini API
+key, so that their token usage and cost stay where they are watched. The key
+is a Secret Manager secret that Cloud Run passes as `GEMINI_API_KEY`, and the
+Dockerfile sets `GOOGLE_GENAI_USE_ENTERPRISE=false`. The offline test of
+chapter 4 fails when that line changes. The Vertex AI API was not enabled in
+the probe project, so the successful runs there went through the Gemini API.
+
+### 13. A workflow calls ADK's API server; no server code of our own
+
+Eventarc delivers each file written to the bucket to a workflow. The workflow
+picks the agent by the file name, creates a session with the path in its
+state, and calls `/run`. One Cloud Run service serves all agents.
+
+- The API server keeps sessions in memory, so the service runs with
+  `--max-instances=1`: the call that runs an agent must reach the instance
+  that created its session.
+- The bucket is a Cloud Storage volume at `/mnt/listings`, so the agents keep
+  their file paths. The exclusive create of the draft (`wx`) works on it.
+  The mount caches file metadata for 60 seconds, and a draft approved within
+  that time was read in its old version; the volume is mounted with
+  `metadata-cache-ttl-secs=0`.
+- The agents' own files start the workflow too. The publisher's gate stops a
+  draft no person approved before any model call, and the workflow ignores
+  the package.
+
+### What else the probes showed
+
+- IAM is eventually consistent. The first run, a minute after the events
+  account got `roles/run.invoker`, was refused with 403; the same upload a
+  minute later worked. The first Eventarc trigger in a project can fail with
+  "Permission denied while using the Eventarc Service Agent" for a few
+  minutes; `cloud/deploy.sh` retries.
+- `gcloud run deploy --source` creates the bucket
+  `run-sources-<project>-<region>` for the upload, and without `--image` an
+  Artifact Registry repository `cloud-run-source-deploy`. The chapter creates
+  its own repository and names the bucket in its teardown.
+
 ## Consequences
 
 - `AGENTS.md` states decisions 1, 2, and 5 as rules.
@@ -240,3 +309,6 @@ dev tools, not the tutorial's code.
 - Not decided yet, recommended for the chapter 2 spec: `scripts/run-agent.ts`
   reports an event that carries `errorCode` or `errorMessage`, so that a
   failed model call does not look like a successful run.
+- Chapter 4 deploys with its own `Dockerfile` and `cloud/deploy.sh`. The
+  `adk-typescript` skill names decisions 11 and 12 as limits, and the offline
+  test of chapter 4 enforces decision 12.

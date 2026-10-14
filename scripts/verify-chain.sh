@@ -4,7 +4,7 @@
 # Without arguments the full chain below is checked, in order.
 set -euo pipefail
 
-CHAIN=(main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution chapter-03-starter chapter-03-solution)
+CHAIN=(main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution chapter-03-starter chapter-03-solution chapter-04-starter chapter-04-solution)
 if [ "$#" -gt 0 ]; then
   CHAIN=("$@")
 fi
@@ -62,7 +62,7 @@ for branch in "${CHAIN[@]}"; do
       esac
 
       # Invariant 3: a solution has no TODO left for its own chapter.
-      if [ "$kind" = solution ] && git grep -q "TODO(ch$number-" "$branch" -- src scripts; then
+      if [ "$kind" = solution ] && git grep -q "TODO(ch$number-" "$branch" -- src scripts cloud Dockerfile; then
         fail "$branch" "invariant 3: TODO(ch$number-…) markers remain"
       fi
       ;;

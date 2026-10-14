@@ -26,7 +26,7 @@ described below.
 ## Maintaining the chain
 
 ```
-main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── chapter-02-solution ── chapter-03-starter ── chapter-03-solution ── …
+main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── chapter-02-solution ── chapter-03-starter ── chapter-03-solution ── chapter-04-starter ── chapter-04-solution
 ```
 
 1. Commit the fix on the earliest branch it belongs to (`main` for anything
@@ -36,7 +36,7 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
 3. Replay the rest of the chain onto it. From the last branch in the chain:
 
    ```sh
-   git switch chapter-03-solution
+   git switch chapter-04-solution
    git rebase --update-refs <branch-you-fixed>
    ```
 
@@ -44,11 +44,11 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
 5. Cut the next release on every chain branch, for example:
 
    ```sh
-   git tag -a chapter-03-starter-v5 chapter-03-starter -m "Chapter 3 starter, release v5"
-   git tag -a chapter-03-solution-v5 chapter-03-solution -m "Chapter 3 solution, release v5"
+   git tag -a chapter-04-starter-v6 chapter-04-starter -m "Chapter 4 starter, release v6"
+   git tag -a chapter-04-solution-v6 chapter-04-solution -m "Chapter 4 solution, release v6"
    ```
 
-6. Push: `git push --force-with-lease origin main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution chapter-03-starter chapter-03-solution`
+6. Push: `git push --force-with-lease origin main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution chapter-03-starter chapter-03-solution chapter-04-starter chapter-04-solution`
    and `git push origin --tags`.
 
 Release tags never move. A ruleset on GitHub rejects an update or a deletion

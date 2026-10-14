@@ -8,9 +8,7 @@ layer and leaves you with something that runs.
 | 1       | Foundation, setup and specialist agents | Available |
 | 2       | Listing agent and human review          | Available |
 | 3       | Publisher agent and human handoff       | Available |
-| 4       | Cloud deployment with events            | Planned   |
-
-Chapter 4 is planned. Its content may change while it is written.
+| 4       | The agents in Google Cloud              | Available |
 
 ## Chapter 1: Foundation, setup and specialist agents
 
@@ -110,27 +108,33 @@ decides, and what stays with a human.
 [ADK function tools](https://adk.dev/tools-custom/function-tools/),
 [ADK evaluation](https://adk.dev/evaluate/).
 
-## Chapter 4: Cloud deployment with events
+## Chapter 4: The agents in Google Cloud
 
 **You need:** chapters 1 to 3, the `gcloud` CLI, and a Google Cloud project
-with Cloud Run, Eventarc, Artifact Registry, and Cloud Build enabled.
+with billing. No Docker: Cloud Build builds the image.
 
-**Goal:** The workflow runs in the cloud without a machine that stays on. Both
-agents become Cloud Run services that scale to zero, and storage events start
-them.
+**Goal:** The same agents run in Google Cloud, started by files, without a
+machine that stays on. A photo uploaded to a bucket becomes a draft, and the
+draft uploaded again with `status: freigegeben` becomes the ready-to-post
+package. ADK's API server runs on Cloud Run and scales to zero. A Cloud
+Storage volume keeps the agents' file paths. Eventarc starts a workflow for
+every file written to the bucket, and the workflow calls the server. The
+agents keep using your Gemini API key, from Secret Manager. Every API,
+resource, service account, and role is named in the chapter with the
+`gcloud` command that creates it, and one script removes it all again.
 
 **You implement:**
 
-- a multi-stage `Dockerfile` for the TypeScript services,
-- two Cloud Run services: one that creates the draft and one that prepares the
-  package,
-- a Cloud Storage bucket in place of the local folder, with Eventarc triggers:
-  a new image starts the first service, an updated draft starts the second.
+- the `CMD` of the `Dockerfile`, which starts ADK's API server,
+- the workflow step that chooses the agent by the type of the file,
+- the two calls of the API server, with an identity token.
 
-**Done when:** uploading a photo to the bucket produces a draft, and uploading
-the draft again with `status: freigegeben` produces the ready-to-post package.
-Both runs are visible in Cloud Logging.
+**Done when:** `npm run test:offline` passes; a photo uploaded with
+`cloud/upload.sh` produces a draft, and the approved draft produces the
+package; the runs show in the workflow's executions and in Cloud Logging;
+and `cloud/teardown.sh` removes everything.
 
-**Docs:** [Deploying Node.js services on Cloud Run](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-nodejs-service),
-[Eventarc overview](https://cloud.google.com/eventarc/docs/overview),
-[Service identity on Cloud Run](https://cloud.google.com/run/docs/securing/service-identity).
+**Docs:** [ADK API server](https://adk.dev/runtime/api-server/),
+[Deploying to Cloud Run from source](https://cloud.google.com/run/docs/deploying-source-code),
+[Cloud Storage volumes on Cloud Run](https://cloud.google.com/run/docs/configuring/services/cloud-storage-volume-mounts),
+[Eventarc: Cloud Storage events to Workflows](https://cloud.google.com/eventarc/docs/workflows/route-trigger-cloud-storage).
