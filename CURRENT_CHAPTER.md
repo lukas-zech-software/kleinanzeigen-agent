@@ -49,8 +49,10 @@ print the tool calls. They are in the session file,
 `adk/listing-agent.session.json`, and in the web UI.
 
 `session:check` is the one piece of checking code in this chapter, and you
-write its core in `ch02-5`. It is a stand-in: ADK 2.3 brings `adk eval`, which
-checks a run against expected tool calls without any code of yours.
+write its core in `ch02-5`. ADK has an eval runner for checking a run against
+expected tool calls, and chapter 3 uses it. It compares the arguments of a
+tool call exactly. This agent writes its arguments freely, so here a check of
+the tool names and their order does the job.
 
 ## What is already there
 
