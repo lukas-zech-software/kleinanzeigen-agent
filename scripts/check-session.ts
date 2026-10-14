@@ -1,5 +1,6 @@
 // Checks the session that `adk run --save_session` wrote for the listing agent.
-// This script is a stand-in. From ADK 2.3.0, `adk eval` does this job with an eval set.
+// ADK's eval runner compares the arguments of a tool call exactly. This agent writes its
+// arguments freely, so this script checks the tool names and their order. Chapter 3 uses the runner.
 import { existsSync, readFileSync } from 'node:fs';
 import { getFunctionResponses, isFinalResponse, stringifyContent, type Session } from '@google/adk';
 import { SEARCH_QUERIES_KEY } from '../src/session-state.js';
