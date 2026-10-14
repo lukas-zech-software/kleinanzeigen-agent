@@ -4,7 +4,7 @@
 # Without arguments the full chain below is checked, in order.
 set -euo pipefail
 
-CHAIN=(main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution)
+CHAIN=(main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution chapter-03-starter chapter-03-solution)
 if [ "$#" -gt 0 ]; then
   CHAIN=("$@")
 fi

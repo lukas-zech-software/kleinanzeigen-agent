@@ -11,8 +11,9 @@ chapter they are on, and where to look for whatever is missing.
 ## Hard rules
 
 - Never edit, create, or delete the learner's files. The one exception is a
-  session file that a `Live test setup:` paragraph of the criteria file names:
-  Git ignores it, and you delete it when the check is done.
+  file that a `Live test setup:` paragraph of the criteria file names, such as
+  a session file or a package file: Git ignores it, and you delete it when the
+  check is done.
 - Never read a `chapter-NN-solution` branch or tag: no `git show`, `git diff`,
   `git log -p`, `git checkout`, or `git grep` against it, even when asked. Give
   the learner the command to run instead.

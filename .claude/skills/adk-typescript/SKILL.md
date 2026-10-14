@@ -57,14 +57,27 @@ Each of these cost a failed run. The evidence is named in
   error thrown in a callback, as an event with `errorCode` and
   `errorMessage`.
 - Curly braces in an instruction are placeholders for session state keys.
+- A before-agent callback that returns an answer stops the agent before the
+  model is called. Use it for a rule the agent must never break.
+- `adk eval` cannot load an agent file in ADK 2.3.0. Run an eval set with
+  `runEvals`, as `scripts/run-evals.ts` does.
+- The eval runner compares tool arguments exactly. Use it where a tool takes
+  no free text. A run that ends in an error event has no tool call, so a case
+  that expects none passes for a broken agent.
+- `adk run --log_level` sets the level of the CLI's own copy of ADK. The
+  agent's entry file sets the level for the agent with `setLogLevel`. Both are
+  needed for a quiet run.
 
 ## Commands
 
-| Command                                       | What it does                                    | API key |
-| --------------------------------------------- | ----------------------------------------------- | ------- |
-| `npm run check`                               | Guard, version check, typecheck, format check   | No      |
-| `npm run test:offline`                        | The agents against the scripted model           | No      |
-| `npm run test:agents -- <photo>`              | Both chapter 1 agents, with proof of the search | Yes     |
-| `npm run agent:vision`, `npm run agent:price` | `adk run` with a replay file                    | Yes     |
-| `npm run agent:web`                           | ADK web UI for the agents in `adk/`             | To chat |
-| `scripts/update-adk-guides.sh [ref]`          | Replaces the vendored guides                    | No      |
+| Command                                          | What it does                                                          | API key |
+| ------------------------------------------------ | --------------------------------------------------------------------- | ------- |
+| `npm run check`                                  | Guard, version check, typecheck, format check                         | No      |
+| `npm run test:offline`                           | The agents against the scripted model                                 | No      |
+| `npm run test:agents -- <photo>`                 | Both chapter 1 agents, with proof of the search                       | Yes     |
+| `npm run agent:vision`, `npm run agent:price`    | `adk run` with a replay file                                          | Yes     |
+| `npm run agent:listing`, `npm run session:check` | The chapter 2 agent with `adk run`, then a check of the saved session | Yes, No |
+| `npm run agent:publisher`                        | The chapter 3 agent with `adk run`                                    | Yes     |
+| `npm run eval:publisher`                         | The chapter 3 eval set with ADK's eval runner                         | Yes     |
+| `npm run agent:web`                              | ADK web UI for the agents in `adk/`                                   | To chat |
+| `scripts/update-adk-guides.sh [ref]`             | Replaces the vendored guides                                          | No      |
