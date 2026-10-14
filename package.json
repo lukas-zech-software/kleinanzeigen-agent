@@ -20,12 +20,15 @@
     "check:adk-version": "scripts/check-adk-version.sh"
   },
   "dependencies": {
-    "@google/adk": "2.2.1"
+    "@google/adk": "2.3.0"
   },
   "private": true,
   "devDependencies": {
-    "@google/adk-devtools": "2.2.1",
+    "@google/adk-devtools": "2.3.0",
     "prettier": "3.9.9",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "tedious": "^20.3.7"
   }
 }
