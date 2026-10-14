@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import type { ListingDraft } from './draft-file.js';
+import { parse } from 'yaml';
+import { listingDraftSchema, type ListingDraft } from './draft-file.js';
 
 /** Thrown when a file is not a readable listing draft. The message says what is wrong. */
 export class DraftFormatError extends Error {
@@ -9,16 +10,38 @@ export class DraftFormatError extends Error {
   }
 }
 
-// TODO(ch03-1): Turn the text of a draft file back into a `ListingDraft`.
-// A draft starts with a frontmatter block between two `---` lines, followed by
-// the listing text. Parse the block with `parse` from the `yaml` package, add
-// the text as `description`, and validate the result with `listingDraftSchema`
-// from `./draft-file.js`. Throw a `DraftFormatError` that says what is wrong
-// when the block is missing, is not closed, is not valid YAML, or a field does
-// not match the schema: name the field in that case. A person edits this file
-// by hand, possibly on Windows, so accept `\r\n` line endings.
 export function parseDraft(content: string): ListingDraft {
-  throw new Error('parseDraft is not implemented yet (TODO ch03-1).');
+  // A person may have edited the draft on Windows.
+  const text = content.replace(/\r\n/g, '\n');
+  if (!text.startsWith('---\n')) {
+    throw new DraftFormatError('The draft does not start with a frontmatter block (---).');
+  }
+  const end = text.indexOf('\n---\n', 4);
+  if (end === -1) {
+    throw new DraftFormatError('The frontmatter block is not closed with a --- line.');
+  }
+
+  let frontmatter: unknown;
+  try {
+    frontmatter = parse(text.slice(4, end + 1));
+  } catch {
+    throw new DraftFormatError('The frontmatter is not valid YAML.');
+  }
+  if (typeof frontmatter !== 'object' || frontmatter === null || Array.isArray(frontmatter)) {
+    throw new DraftFormatError('The frontmatter has no fields.');
+  }
+
+  const result = listingDraftSchema.safeParse({
+    ...frontmatter,
+    description: text.slice(end + 5).trim(),
+  });
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    throw new DraftFormatError(
+      `The field "${issue.path.join('.')}" is not valid: ${issue.message}`,
+    );
+  }
+  return result.data;
 }
 
 /** Reads a draft file and returns it parsed. Throws `DraftFormatError` when it cannot. */

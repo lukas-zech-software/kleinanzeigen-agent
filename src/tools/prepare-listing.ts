@@ -1,6 +1,10 @@
+import path from 'node:path';
 import { FunctionTool, type Context } from '@google/adk';
 import { z } from 'zod';
-import type { Problem } from '../listing/rules.js';
+import { DraftFormatError, readDraft } from '../draft/read-draft.js';
+import { writePackage } from '../listing/package-file.js';
+import { findProblems, type Problem } from '../listing/rules.js';
+import { DRAFT_PATH_KEY } from '../session-state.js';
 
 /** The tool takes no arguments. The draft path comes from the session state. */
 export const prepareListingInputSchema = z.object({});
@@ -12,22 +16,33 @@ export type PrepareListingOutput =
 /** The part of ADK's tool context that this tool uses: the session state. */
 export type PrepareToolContext = Pick<Context, 'state'>;
 
-// TODO(ch03-3): Validate the draft and write the package.
-// Read the draft path from the session state with `DRAFT_PATH_KEY` from
-// `../session-state.js`. Read the draft with `readDraft` from
-// `../draft/read-draft.js`, and check it with `findProblems` from
-// `../listing/rules.js`: the folder of the draft is `path.dirname(draftPath)`.
-// When there is no problem, write the package with `writePackage` from
-// `../listing/package-file.js` and return its path. Return an error result
-// with the problems otherwise. A missing path and a `DraftFormatError` are
-// problems too: return them as a result, under the fields `draft_path` and
-// `draft`. The tool reads the file itself and does not trust what the agent
-// was told about the listing: this is the last check before a person posts.
 export async function prepareListing(
   _input: z.infer<typeof prepareListingInputSchema>,
   toolContext?: PrepareToolContext,
 ): Promise<PrepareListingOutput> {
-  throw new Error('prepareListing is not implemented yet (TODO ch03-3).');
+  const draftPath = toolContext?.state.get<unknown>(DRAFT_PATH_KEY);
+  if (typeof draftPath !== 'string' || draftPath === '') {
+    return {
+      status: 'error',
+      problems: [{ field: DRAFT_PATH_KEY, message: 'The session state has no draft path.' }],
+    };
+  }
+
+  let draft;
+  try {
+    draft = await readDraft(draftPath);
+  } catch (error) {
+    if (error instanceof DraftFormatError) {
+      return { status: 'error', problems: [{ field: 'draft', message: error.message }] };
+    }
+    throw error;
+  }
+
+  const problems = await findProblems(draft, path.dirname(draftPath));
+  if (problems.length > 0) {
+    return { status: 'error', problems };
+  }
+  return { status: 'success', packagePath: await writePackage(draftPath, draft) };
 }
 
 export const prepareListingTool = new FunctionTool({

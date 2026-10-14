@@ -14,15 +14,6 @@ import {
 } from '@google/adk';
 import { publisherAgent } from '../src/agents/publisher-agent.js';
 
-// TODO(ch03-6): Add two cases to examples/evals/publisher.evalset.json.
-// The file has one case: a draft that is not approved, where the agent must
-// call no tool. Add a case for `examples/drafts/approved.md` and one for
-// `examples/drafts/title-too-long.md`. Each case gives the draft path in
-// `initial_session.state` and lists in `expected_tool_use` the tool calls a
-// correct run makes, with `tool_name` and `tool_input`. ADK compares them
-// exactly, and `prepare_listing` takes no arguments, so its `tool_input` is
-// an empty object. Think about the third case: the tool rejects the listing,
-// but is it still called?
 const EVAL_SET_FILE = 'examples/evals/publisher.evalset.json';
 const CONFIG_FILE = 'examples/evals/test_config.json';
 
