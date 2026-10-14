@@ -1,0 +1,14 @@
+[
+  {
+    "name": "not_approved",
+    "initial_session": { "state": { "draft_path": "examples/drafts/not-approved.md" } },
+    "data": [
+      {
+        "query": "Prepare the listing for posting.",
+        "expected_tool_use": [],
+        "expected_intermediate_agent_responses": [],
+        "reference": "The draft is not approved. Nothing was prepared."
+      }
+    ]
+  }
+]
