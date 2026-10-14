@@ -230,3 +230,6 @@ examples/photos/*.md
 
 # Session files that `adk run --save_session` writes
 adk/*.session.json
+
+# Packages the publisher agent writes beside a draft
+*.listing.json
