@@ -1,0 +1,11 @@
+# What `gcloud run deploy --source .` leaves out of the upload. Without this file gcloud would
+# fall back to .gitignore; listing it here keeps the API key out of the build for certain.
+.env
+.env.*
+.git/
+node_modules/
+docs/
+examples/
+scripts/
+*.session.json
+*.listing.json

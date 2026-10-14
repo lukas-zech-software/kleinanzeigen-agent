@@ -1,0 +1,64 @@
+# Runs an agent for every file that lands in the listings bucket.
+# Eventarc starts this workflow with the Cloud Storage event. The agents run in the Cloud Run
+# service at SERVICE_URL, which sees the bucket under MOUNT_PATH. cloud/deploy.sh sets both.
+main:
+  params: [event]
+  steps:
+    - init:
+        assign:
+          - service_url: ${sys.get_env("SERVICE_URL")}
+          - object_name: ${event.data.name}
+          - file_path: ${sys.get_env("MOUNT_PATH") + "/" + object_name}
+          - session_id: ${sys.get_env("GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID")}
+          - lower_name: ${text.to_lower(object_name)}
+    # TODO(ch04-2): A step choose_agent that decides by the file name which agent runs.
+    # - A photo (.jpg, .jpeg, .png, in any case): app listing_agent, the file path in the state
+    #   under photo_path, and a message that asks for the listing draft.
+    # - A draft (.md): app publisher_agent, the file path under draft_path, and a message that
+    #   asks to prepare the listing for posting.
+    # - Anything else, such as the .listing.json the publisher writes: on to the step ignore.
+    # The steps below read the variables app, state, and message.
+    # Docs: https://cloud.google.com/workflows/docs/reference/syntax/conditions
+    - ignore:
+        return:
+          file: ${object_name}
+          agent: none
+    # TODO(ch04-3): The steps create_session and run_agent: the two calls of ADK's API server.
+    # 1. POST {SERVICE_URL}/apps/{app}/users/{user}/sessions/{session} with the body
+    #    {"state": state}. Use one user name for all runs, and session_id from init.
+    # 2. POST {SERVICE_URL}/run with appName, the same userId and sessionId, and newMessage:
+    #    a message of the role "user" with one text part. Store the response in the variable run.
+    # Cloud Run accepts only calls with an identity token: give both calls
+    # auth with the type OIDC and the audience service_url. An agent run takes up to a few
+    # minutes, so give the second call a timeout that allows for it.
+    # Docs: https://adk.dev/runtime/api-server/ and
+    # https://cloud.google.com/workflows/docs/authenticate-from-workflow
+    - check_last_event:
+        assign:
+          - last_event: ${run.body[len(run.body) - 1]}
+        next: check_error
+    - check_error:
+        switch:
+          - condition: ${map.get(last_event, "errorCode") != null}
+            raise:
+              file: ${object_name}
+              agent: ${app}
+              error: ${last_event.errorCode}
+              message: ${map.get(last_event, "errorMessage")}
+    - collect_answer:
+        assign:
+          - answer: ''
+          - parts: ${default(map.get(last_event, ["content", "parts"]), [])}
+    - join_text_parts:
+        for:
+          value: part
+          in: ${parts}
+          steps:
+            - add_text:
+                assign:
+                  - answer: ${answer + default(map.get(part, "text"), "")}
+    - report:
+        return:
+          file: ${object_name}
+          agent: ${app}
+          answer: ${answer}
