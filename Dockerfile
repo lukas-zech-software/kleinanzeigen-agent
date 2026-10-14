@@ -18,7 +18,5 @@ ENV GOOGLE_GENAI_USE_ENTERPRISE=false
 # Run as the unprivileged user of the Node image, not as root.
 USER node
 
-# TODO(ch04-1): Start ADK's API server for the agents in adk/ here, as the CMD of the image.
-# Cloud Run sends requests to the port in the variable PORT (8080 unless it says otherwise), and
-# the server must listen on all interfaces of the container, not only on 127.0.0.1.
-# Docs: https://adk.dev/runtime/api-server/ and https://docs.docker.com/reference/dockerfile/#cmd
+# Cloud Run sends requests to the port in $PORT, 8080 by default.
+CMD ["sh", "-c", "exec npx adk api_server adk --host=0.0.0.0 --port=${PORT:-8080} --log_level=info"]
