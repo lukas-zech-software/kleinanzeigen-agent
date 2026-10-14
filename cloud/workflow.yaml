@@ -11,28 +11,52 @@ main:
           - file_path: ${sys.get_env("MOUNT_PATH") + "/" + object_name}
           - session_id: ${sys.get_env("GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID")}
           - lower_name: ${text.to_lower(object_name)}
-    # TODO(ch04-2): A step choose_agent that decides by the file name which agent runs.
-    # - A photo (.jpg, .jpeg, .png, in any case): app listing_agent, the file path in the state
-    #   under photo_path, and a message that asks for the listing draft.
-    # - A draft (.md): app publisher_agent, the file path under draft_path, and a message that
-    #   asks to prepare the listing for posting.
-    # - Anything else, such as the .listing.json the publisher writes: on to the step ignore.
-    # The steps below read the variables app, state, and message.
-    # Docs: https://cloud.google.com/workflows/docs/reference/syntax/conditions
+    - choose_agent:
+        switch:
+          - condition: ${text.match_regex(lower_name, "\\.(jpe?g|png)$")}
+            assign:
+              - app: listing_agent
+              - state:
+                  photo_path: ${file_path}
+              - message: Create the listing draft for the photo.
+            next: create_session
+          - condition: ${text.match_regex(lower_name, "\\.md$")}
+            assign:
+              - app: publisher_agent
+              - state:
+                  draft_path: ${file_path}
+              - message: Prepare the listing for posting.
+            next: create_session
     - ignore:
         return:
           file: ${object_name}
           agent: none
-    # TODO(ch04-3): The steps create_session and run_agent: the two calls of ADK's API server.
-    # 1. POST {SERVICE_URL}/apps/{app}/users/{user}/sessions/{session} with the body
-    #    {"state": state}. Use one user name for all runs, and session_id from init.
-    # 2. POST {SERVICE_URL}/run with appName, the same userId and sessionId, and newMessage:
-    #    a message of the role "user" with one text part. Store the response in the variable run.
-    # Cloud Run accepts only calls with an identity token: give both calls
-    # auth with the type OIDC and the audience service_url. An agent run takes up to a few
-    # minutes, so give the second call a timeout that allows for it.
-    # Docs: https://adk.dev/runtime/api-server/ and
-    # https://cloud.google.com/workflows/docs/authenticate-from-workflow
+    - create_session:
+        call: http.post
+        args:
+          url: ${service_url + "/apps/" + app + "/users/eventarc/sessions/" + session_id}
+          auth:
+            type: OIDC
+            audience: ${service_url}
+          body:
+            state: ${state}
+    - run_agent:
+        call: http.post
+        args:
+          url: ${service_url + "/run"}
+          auth:
+            type: OIDC
+            audience: ${service_url}
+          timeout: 900
+          body:
+            appName: ${app}
+            userId: eventarc
+            sessionId: ${session_id}
+            newMessage:
+              role: user
+              parts:
+                - text: ${message}
+        result: run
     - check_last_event:
         assign:
           - last_event: ${run.body[len(run.body) - 1]}
