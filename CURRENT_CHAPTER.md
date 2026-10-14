@@ -1,152 +1,140 @@
-# Chapter 2: Listing Agent and Human Review
+# Chapter 3: Publisher Agent and Human Handoff
 
 ## What you need
 
-- Chapter 1. This starter contains its reference solution, so you can start
-  here with or without your own. Your chapter 1 code stays on your branch.
+- Chapters 1 and 2. This starter contains their reference solutions, so you
+  can start here with or without your own.
 - Node.js 26 or newer, npm, and your `GEMINI_API_KEY` in `.env`.
-- The dependencies from `npm ci`. New in this chapter: `yaml`.
-- A photo of an item you could sell. Take your own or use one from
-  [examples/photos](examples/photos/README.md).
+- The dependencies from `npm ci`. Nothing new in this chapter.
 
 ## Goal
 
-You build the agent that turns a photo into a listing draft. It asks
-`vision_inspector` what the photo shows, asks `price_evaluator` what the item
-sells for, writes a listing text, and saves a draft: a Markdown file with
-YAML frontmatter, beside the photo.
+You build the agent that takes a listing draft a person approved and prepares
+it for posting. It does not post. Posting cannot be undone, so the agent
+stops in front of it and hands a checked package to a person.
 
-The agent never publishes anything. The draft has `status: draft`. A person
-reads it, edits it, and changes the status to `freigegeben` (German for
-"approved"). Chapter 3 picks up from there.
+The chapter is about that boundary: what an agent may do alone, what a tool
+decides, and what stays with a human.
+
+- A person approves a draft by changing `status: draft` to
+  `status: freigegeben` in the file. That is the only signal.
+- The agent does nothing with a draft that is not approved. Code enforces
+  this, not the instruction.
+- A tool checks the listing rules and writes the package: a JSON file with
+  the fields, the image, and a checklist for the person.
+- The model reads the listing critically and writes the handoff note.
 
 The terms this chapter uses:
 
-- **`AgentTool`** wraps an agent so that another agent can call it like a
-  tool, under its name.
-- A **function tool** is a function of yours that the agent may call. Its Zod
-  schema tells the model which arguments it takes.
-- The **tool context** is the second argument of a tool function. The session
-  state is on it.
-- A **replay file** holds the session state and the question for one run.
-  `adk run` reads it, so you can run an agent without typing.
-- A **session file** is what `adk run --save_session` writes: every event of
-  the run and the final state.
+- A **before-agent callback** runs before the agent does anything. When it
+  returns an answer, the agent stops with that answer and the model is not
+  called.
+- An **eval case** states what a correct run does: for a given state and
+  question, which tools the agent calls, with which arguments.
+- An **eval set** is a file with eval cases. ADK's eval runner runs each case
+  and compares.
 
 ## How you work in this chapter
 
-ADK comes with the tools to run an agent and to see what it did. You do not
-write a runner, and you do not write code that prints events.
+As in chapter 2, ADK's own tools run the agent:
 
 ```sh
-npm run agent:listing   # runs the agent with `adk run` and saves the session
-npm run agent:web       # the same agent in a web UI, with every event and the state
-npm run session:check   # checks the saved session: the tool calls and the search
+npm run agent:publisher   # runs the agent on examples/drafts/approved.md and saves the session
+npm run agent:web         # the same agent in a web UI
+npm run eval:publisher    # runs your eval set with ADK's eval runner
 ```
 
-`agent:listing` prints the question and the agent's final answer. It does not
-print the tool calls. They are in the session file,
-`adk/listing-agent.session.json`, and in the web UI.
+`eval:publisher` uses ADK's eval runner. ADK's command for it is `adk eval`.
+In ADK 2.3.0 that command cannot load an agent file, so
+`scripts/run-evals.ts` calls the function behind it, `runEvals`, with the
+same eval set file. The file you write is the one `adk eval` reads.
 
-`session:check` is the one piece of checking code in this chapter, and you
-write its core in `ch02-5`. ADK has an eval runner for checking a run against
-expected tool calls, and chapter 3 uses it. It compares the arguments of a
-tool call exactly. This agent writes its arguments freely, so here a check of
-the tool names and their order does the job.
+Chapter 2 could not use the eval runner: it compares tool arguments exactly,
+and the listing agent writes its arguments freely. Here the one tool takes no
+arguments, so a run either matches or it does not.
 
 ## What is already there
 
-- `src/agents/vision-inspector.ts` and `src/agents/price-evaluator.ts`: the
-  agents from chapter 1. The price agent has one addition, the callback
-  `recordSearchQueries`. It stores the agent's Google searches in the session
-  state, because an agent that calls another agent does not see its events.
-- `src/draft/draft-file.ts`: the draft schema `listingDraftSchema`,
-  `draftPathFor`, and `writeDraft`, which never overwrites an existing draft
-  and throws `DraftExistsError` instead.
-- `src/tools/create-listing-draft.ts`: the tool definition and its output
-  schema. The input schema is empty and the function throws.
-- `src/agents/listing-agent.ts`: an agent with a name and a model.
-- `src/session/tool-calls.ts`: the type `ToolCall` and a function that throws.
-- `adk/listing_agent.ts`, `examples/replays/listing-agent.json`, and
-  `examples/expected/listing-agent.json`: what `adk run` loads, the state and
-  the question for a run, and the tool calls a good run makes.
-- `scripts/test-offline-chapter-02.ts` and `scripts/check-session.ts`: the
-  offline test and the session check.
+- `examples/drafts/`: three drafts to work with. One is approved, one is not,
+  and one is approved with a title that is too long.
+- `src/draft/read-draft.ts`: `readDraft`, which reads a file and calls your
+  `parseDraft`, and the error class `DraftFormatError`.
+- `src/listing/rules.ts`: `MAX_TITLE_LENGTH` and the type `Problem`.
+- `src/listing/package-file.ts`: `writePackage`, which writes the package
+  beside the draft, and the checklist for the person.
+- `src/tools/prepare-listing.ts`: the tool definition. Its function throws.
+- `src/agents/publisher-agent.ts`: an agent with a name and a model.
+- `examples/evals/publisher.evalset.json`: an eval set with one case.
+- `scripts/run-evals.ts` and `scripts/test-offline-chapter-03.ts`.
 
 ## Your tasks
 
-Each task is marked in the code as `// TODO(ch02-k)`. Delete the comment when
+Each task is marked in the code as `// TODO(ch03-k)`. Delete the comment when
 the task is done.
 
-| Task     | File                                | What to do                                                                                                                                                                           |
-| -------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ch02-1` | `src/tools/create-listing-draft.ts` | Input schema: `title`, `price`, `currency`, `category`, `condition`, and `description`. `price` and `condition` follow `listingDraftSchema`. No field for a file path.               |
-| `ch02-2` | `src/tools/create-listing-draft.ts` | `createListingDraft`: read `photo_path` from the session state. Return an error result when it is missing, the photo does not exist, or a draft exists. Otherwise call `writeDraft`. |
-| `ch02-3` | `src/agents/listing-agent.ts`       | Complete the agent: a description, and as tools both chapter 1 agents, each in an `AgentTool`, and `createListingDraftTool`.                                                         |
-| `ch02-4` | `src/agents/listing-agent.ts`       | The instruction: the steps, a full-sentence question for the price agent, what to do when a tool returns nothing or an error, and a final answer that names the draft file.          |
-| `ch02-5` | `src/session/tool-calls.ts`         | `toolCallsOf`: return the tool calls of a session, in order.                                                                                                                         |
+| Task     | File                              | What to do                                                                                                                        |
+| -------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `ch03-1` | `src/draft/read-draft.ts`         | `parseDraft`: turn the text of a draft file back into a validated draft, with a clear error for every way the file can be broken. |
+| `ch03-2` | `src/listing/rules.ts`            | `findProblems`: the status, the title length, and the image, each reported with its field.                                        |
+| `ch03-3` | `src/tools/prepare-listing.ts`    | `prepareListing`: read the draft from the path in the session state, check it, and write the package or return the problems.      |
+| `ch03-4` | `src/agents/publisher-agent.ts`   | `requireApprovedDraft`: the before-agent callback that stops the agent when the draft is not approved.                            |
+| `ch03-5` | `src/agents/publisher-agent.ts`   | Complete the agent: description, instruction with `{listing}`, the tool, and the callback.                                        |
+| `ch03-6` | `scripts/run-evals.ts` (the note) | Add two eval cases to `examples/evals/publisher.evalset.json`: the approved draft and the one with the long title.                |
 
 Four things to know before you start:
 
-- **The model never supplies a file path.** The photo path is in the session
-  state, as in chapter 1. `AgentTool` copies the state into the run of the
-  agent it wraps, and your tool reads it from its tool context.
-- **An expected failure is a result.** `create_listing_draft` returns
-  `{ status: 'error', message }` when a draft already exists. The agent reads
-  that and tells you. A thrown error is for a failure nobody planned for.
-- **A failing agent behind `AgentTool` returns nothing.** When
-  `vision_inspector` cannot read the photo, your agent gets an empty result,
-  not an error. Your instruction has to say what to do then, or the model may
-  make up a listing.
-- **No `.positive()` in a schema the model sees.** ADK turns it into a field
-  the Gemini API rejects. `listingDraftSchema` uses `.min(0.01)` for the
-  price, and your input schema can reuse that field.
-
-The listing language is your choice. Set it in your instruction.
+- **A rule that must always hold is code.** "Never act on a draft that is not
+  approved" is such a rule. In a before-agent callback the model has no say.
+- **The tool trusts nothing.** It reads the draft file again and checks it,
+  whatever the agent was told. It takes no arguments, so the model cannot
+  hand it a path or a price.
+- **The model does what rules cannot.** Whether a text fits its title is a
+  judgement. The agent notes it and tells the person. Whether the listing may
+  be posted is decided by the tool.
+- **A rejected draft is still handed to the tool.** In the third eval case
+  the tool refuses the listing, and the agent has still called it once.
 
 ## Check your work
 
 ```sh
 npm run typecheck
 npm run test:offline
-npm run agent:listing
-npm run session:check
+npm run eval:publisher
+npm run agent:publisher
 ```
 
-`test:offline` needs no API key. It runs all three agents against a scripted
-model and checks the draft your tool writes, the tools your agent declares,
-and what `toolCallsOf` returns. On the untouched starter it passes the
-chapter 1 cases and stops with
-`createListingDraft is not implemented yet (TODO ch02-2).`
+`test:offline` needs no API key. It checks your parser, your rules, your
+tool, and your callback, and it runs your eval set against a scripted model.
+On the untouched starter it passes the cases of chapters 1 and 2 and stops
+with `parseDraft is not implemented yet (TODO ch03-1).`
 
-`agent:listing` calls the Gemini API and uses your quota. It works on
-`examples/photos/game-boy.jpg` and writes the draft beside it, as
-`examples/photos/game-boy.md`. Git ignores that file and the session file.
+`eval:publisher` and `agent:publisher` call the Gemini API and use your
+quota. The case with the draft that is not approved makes no model call.
 
-A draft is never overwritten. Delete `examples/photos/game-boy.md` before you
-run the agent on the same photo again, or the tool refuses and the agent
-tells you so.
+Both write a package beside the draft, `examples/drafts/approved.listing.json`.
+Git ignores package files. A package is written again on every run: it is
+derived from the draft, and the draft is what a person edits.
 
-To use your own photo, change `photo_path` in
-`examples/replays/listing-agent.json`.
+To hand over your own listing from chapter 2: open the draft the listing
+agent wrote, check it, set `status: freigegeben`, and put its path into
+`examples/replays/publisher-agent.json`.
 
 The chapter is done when:
 
 - `npm run typecheck` reports no errors,
 - `npm run test:offline` passes,
-- `npm run session:check` passes after a run: three tool calls in order, at
-  least one search query, a saved draft, and
-- the draft has valid frontmatter, `status: draft`, and a price and a text
-  that fit your photo.
+- `npm run eval:publisher` reports three or more cases passed and none
+  failed, and
+- `npm run agent:publisher` answers with the package file and points to
+  check, and does not claim that anything was posted.
 
 In Claude Code, ask "is my chapter done?" for a check against each task, with
 a hint for whatever is still open.
 
 ## Documentation
 
-- [ADK agents](https://adk.dev/agents/llm-agents/)
-- [ADK function tools and agents as tools](https://adk.dev/tools-custom/function-tools/)
-- [ADK session state](https://adk.dev/sessions/state/)
-- [ADK events](https://adk.dev/events/)
 - [ADK callbacks](https://adk.dev/callbacks/types-of-callbacks/)
-- [yaml](https://eemeli.org/yaml/)
+- [ADK function tools](https://adk.dev/tools-custom/function-tools/)
+- [ADK session state](https://adk.dev/sessions/state/)
+- [ADK evaluation](https://adk.dev/evaluate/)
+- [ADK agents](https://adk.dev/agents/llm-agents/)
