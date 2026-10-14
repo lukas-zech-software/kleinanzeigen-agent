@@ -10,5 +10,29 @@
         "reference": "The draft is not approved. Nothing was prepared."
       }
     ]
+  },
+  {
+    "name": "approved",
+    "initial_session": { "state": { "draft_path": "examples/drafts/approved.md" } },
+    "data": [
+      {
+        "query": "Prepare the listing for posting.",
+        "expected_tool_use": [{ "tool_name": "prepare_listing", "tool_input": {} }],
+        "expected_intermediate_agent_responses": [],
+        "reference": "The package is ready."
+      }
+    ]
+  },
+  {
+    "name": "title_too_long",
+    "initial_session": { "state": { "draft_path": "examples/drafts/title-too-long.md" } },
+    "data": [
+      {
+        "query": "Prepare the listing for posting.",
+        "expected_tool_use": [{ "tool_name": "prepare_listing", "tool_input": {} }],
+        "expected_intermediate_agent_responses": [],
+        "reference": "Nothing was prepared. The title is too long."
+      }
+    ]
   }
 ]
