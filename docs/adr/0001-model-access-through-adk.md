@@ -172,6 +172,64 @@ live runs of the chapter 2 reference solution:
   final state to `<session_id>.session.json` beside the agent file. On the
   console it prints the final answer and errors, and no tool calls.
 
+## ADK 2.3.0 and chapter 3
+
+Checked on 2026-10-14 against `@google/adk` 2.3.0, first offline and then in
+two live runs of the chapter 3 reference solution.
+
+### 8. Evals run through `runEvals`, not through `adk eval`
+
+`adk eval` is ADK's command for evaluating an agent. In 2.3.0 it cannot load
+an agent file: its loader passes a `file://` URL to `require`, and that fails
+for a TypeScript file, an ESM file, and a CommonJS file alike. The function
+behind the command, `runEvals`, is exported by `@google/adk` and works.
+`scripts/run-evals.ts` calls it with the eval set file and the config file
+the command would take. When a later ADK release loads agent files, the
+script is replaced by the command.
+
+### 9. Evals only where the tool arguments are fixed
+
+`runEvals` scores a tool trajectory by exact equality of the tool names and
+of the tool arguments. The listing agent of chapter 2 writes its arguments
+freely (a question, a listing text), so no live run can match an expected
+trajectory. Chapter 2 keeps `session:check`, which compares names and order.
+The publisher agent of chapter 3 has one tool without arguments, so its
+trajectories are exact, and chapter 3 uses the eval runner.
+
+### 10. A rule the agent must never break is code, not instruction
+
+The publisher agent must not act on a draft no person has approved. A
+before-agent callback reads the draft and answers itself when the status is
+not `freigegeben`. The model is not called, so it cannot be talked out of the
+rule. The eval case for this passes without a model call.
+
+### What 2.3.0 did not change
+
+- `.positive()`, `.gt()`, and `.lt()` still become `exclusiveMinimum` or
+  `exclusiveMaximum` (decision 5).
+- `adk run --log_level` still does not reach the ADK copy of the agent file.
+  The CLI itself now prints an INFO line when it finds no `.env` beside the
+  agent, so the npm scripts pass `--log_level warn` as well: the entry file
+  sets the level for the agent, the option for the CLI.
+- An agent behind `AgentTool` that fails still returns an empty result.
+
+### Limits of the eval runner
+
+- A run that ends in an error event has no tool call. A case that expects no
+  tool call therefore passes when the agent is broken. An eval set needs
+  cases that expect a call.
+- The runner does not set the process exit code. `scripts/run-evals.ts`
+  exits with 1 when a case failed.
+
+### Dependencies
+
+`@google/adk-devtools` pulls in `tedious` through `@mikro-orm/mssql`, and
+`tedious` 20.0.0 depended on `sprintf-js`, which has an open advisory and no
+fixed release. `package.json` overrides `tedious` to `^20.3.7`, which does
+not use `sprintf-js`. Four high-severity findings remain through `braces`
+(via `fast-glob`), for which no fixed release exists either. They concern the
+dev tools, not the tutorial's code.
+
 ## Consequences
 
 - `AGENTS.md` states decisions 1, 2, and 5 as rules.

@@ -8,7 +8,7 @@ On a chapter branch this file describes that chapter: what you need, what you
 build, and how to check it. To start with chapter 1:
 
 ```sh
-git switch -c my-chapter-01 chapter-01-starter-v4
+git switch -c my-chapter-01 chapter-01-starter-v5
 ```
 
 See [README.md](README.md) for how the chapters are laid out.

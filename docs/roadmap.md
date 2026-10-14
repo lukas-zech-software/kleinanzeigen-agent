@@ -7,10 +7,10 @@ layer and leaves you with something that runs.
 | ------- | --------------------------------------- | --------- |
 | 1       | Foundation, setup and specialist agents | Available |
 | 2       | Listing agent and human review          | Available |
-| 3       | Publisher agent and human handoff       | Planned   |
+| 3       | Publisher agent and human handoff       | Available |
 | 4       | Cloud deployment with events            | Planned   |
 
-Chapters 3 and 4 are planned. Their content may change while they are written.
+Chapter 4 is planned. Its content may change while it is written.
 
 ## Chapter 1: Foundation, setup and specialist agents
 
@@ -80,30 +80,35 @@ the photo.
 **Goal:** A second agent that takes an approved draft and prepares it for
 posting. It does not post. Posting is the step that cannot be undone, so the
 agent stops in front of it and hands a checked package to a person. The
-chapter is about the boundary between what an agent may do alone and what
-stays with a human.
+chapter is about the boundary between what an agent may do alone, what a tool
+decides, and what stays with a human.
 
 **You implement:**
 
-- the parser that reads a draft and refuses to continue while the status is
-  still `draft`,
-- a `prepare_listing` tool that validates the listing before anything leaves
-  the system: a title of at most 65 characters, a price, a category, a
-  description, and at least one image that exists,
-- the publisher agent, which runs the final consistency checks, calls the tool,
-  and writes a ready-to-post package: the validated fields as JSON next to the
-  images, with a short checklist for the person who posts it.
+- the parser that reads a draft a person edited,
+- the listing rules: an approved status, a title of at most 65 characters,
+  and an image that exists,
+- a `prepare_listing` tool that reads the draft itself, checks it, and writes
+  the ready-to-post package: the fields as JSON with a short checklist for
+  the person who posts it,
+- a before-agent callback that stops the agent before the model runs when the
+  draft is not approved,
+- the publisher agent, which reads the listing critically and writes the
+  handoff note,
+- eval cases that state what a correct run does.
 
 **Done when:**
 
-- run against a file with `status: draft`, the agent stops and calls no tool,
-- run against a file with `status: freigegeben`, it writes a package that
-  passes validation,
-- an invalid listing, such as a title that is too long, is rejected with a
-  message that names the field.
+- run against a draft with `status: draft`, the agent answers without calling
+  the model or a tool,
+- run against a draft with `status: freigegeben`, it writes a package,
+- a listing with a title that is too long is rejected with a message that
+  names the field,
+- `npm run test:offline` and `npm run eval:publisher` pass.
 
-**Docs:** [ADK custom tools](https://adk.dev/tools-custom/),
-[Model Context Protocol in ADK](https://adk.dev/mcp/).
+**Docs:** [ADK callbacks](https://adk.dev/callbacks/types-of-callbacks/),
+[ADK function tools](https://adk.dev/tools-custom/function-tools/),
+[ADK evaluation](https://adk.dev/evaluate/).
 
 ## Chapter 4: Cloud deployment with events
 

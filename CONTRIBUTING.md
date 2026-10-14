@@ -26,7 +26,7 @@ described below.
 ## Maintaining the chain
 
 ```
-main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── chapter-02-solution ── …
+main ── chapter-01-starter ── chapter-01-solution ── chapter-02-starter ── chapter-02-solution ── chapter-03-starter ── chapter-03-solution ── …
 ```
 
 1. Commit the fix on the earliest branch it belongs to (`main` for anything
@@ -36,7 +36,7 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
 3. Replay the rest of the chain onto it. From the last branch in the chain:
 
    ```sh
-   git switch chapter-02-solution
+   git switch chapter-03-solution
    git rebase --update-refs <branch-you-fixed>
    ```
 
@@ -44,11 +44,11 @@ main ── chapter-01-starter ── chapter-01-solution ── chapter-02-star
 5. Cut the next release on every chain branch, for example:
 
    ```sh
-   git tag -a chapter-02-starter-v4 chapter-02-starter -m "Chapter 2 starter, release v4"
-   git tag -a chapter-02-solution-v4 chapter-02-solution -m "Chapter 2 solution, release v4"
+   git tag -a chapter-03-starter-v5 chapter-03-starter -m "Chapter 3 starter, release v5"
+   git tag -a chapter-03-solution-v5 chapter-03-solution -m "Chapter 3 solution, release v5"
    ```
 
-6. Push: `git push --force-with-lease origin main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution`
+6. Push: `git push --force-with-lease origin main chapter-01-starter chapter-01-solution chapter-02-starter chapter-02-solution chapter-03-starter chapter-03-solution`
    and `git push origin --tags`.
 
 Release tags never move. A ruleset on GitHub rejects an update or a deletion
@@ -91,5 +91,10 @@ because the guides in `docs/reference/adk-js-guides/` are checked against it.
 4. Run `npm run check` and `npm run test:offline` on every chapter branch,
    and the live tests on every solution.
 
-ADK 2.3.0 brings `adk eval`. When it is on npm, the tool call checks of the
-chapters move to eval sets.
+A chapter starter owns its `package.json`. After the replay, set the same
+versions and the same `overrides` there and run `npm install`.
+
+At every upgrade, check whether `adk eval` loads an agent file:
+`npx adk eval adk/publisher_agent.ts examples/evals/publisher.evalset.json --config_file_path examples/evals/test_config.json`
+on a chapter 3 branch. In ADK 2.3.0 it fails with `Cannot find module
+'file:///…'`. When it works, `scripts/run-evals.ts` gives way to it.

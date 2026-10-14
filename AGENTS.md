@@ -41,16 +41,20 @@ npm run test:agents -- examples/photos/game-boy.jpg  # live test of the chapter 
 npm run agent:vision                                 # live run of one agent with `adk run` and a replay file
 npm run agent:listing                                # live run of the chapter 2 agent, saves a session file
 npm run session:check                                # checks the saved session: tool calls and search
+npm run agent:publisher                              # live run of the chapter 3 agent, writes a package file
+npm run eval:publisher                               # the chapter 3 eval set with ADK's eval runner
 npm run agent:web                                    # ADK web UI for the agents in adk/
 npm run format                                       # format every file with Prettier
 ```
 
-`test:agents`, `agent:vision`, `agent:price`, and `agent:listing` call the
-Gemini API and use the learner's quota. Ask before you run one of them.
-`agent:listing` also writes a draft beside the photo and a session file in
-`adk/`. Git ignores both, and an existing draft makes the next run refuse.
-`test:offline`, `session:check`, and `check` need no key and no quota.
-`examples/photos/` has photos to test with when the learner has none.
+`test:agents`, `agent:vision`, `agent:price`, `agent:listing`,
+`agent:publisher`, and `eval:publisher` call the Gemini API and use the
+learner's quota. Ask before you run one of them. `agent:listing` writes a
+draft beside the photo and a session file in `adk/`, and an existing draft
+makes the next run refuse. `agent:publisher` and `eval:publisher` write a
+package file beside a draft. Git ignores all of these files. `test:offline`,
+`session:check`, and `check` need no key and no quota. `examples/photos/` has
+photos to test with when the learner has none.
 
 ## Checking a chapter: the `check-chapter` skill
 
@@ -117,6 +121,9 @@ loads it from `.claude/skills/adk-typescript/`, any other agent reads
 `npm run check:apis` enforces rules 5 and 6, and `npm run test:offline`
 checks rule 7 for the schemas of the chapter.
 
-Open work: ADK 2.3.0 will bring `adk eval`. When `npm view @google/adk
-version` reports it, follow "Upgrading ADK" in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+Evals: ADK's command for evaluating an agent is `adk eval`. In ADK 2.3.0 it
+cannot load an agent file, so `scripts/run-evals.ts` calls the function
+behind it, `runEvals`. Use the eval runner only where a tool's arguments are
+fixed: it compares them exactly. At the next ADK upgrade, check whether
+`adk eval` loads an agent file, as "Upgrading ADK" in
+[CONTRIBUTING.md](CONTRIBUTING.md) says.
