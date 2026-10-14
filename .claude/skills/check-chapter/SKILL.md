@@ -62,6 +62,9 @@ chapter they are on, and where to look for whatever is missing.
    learner declines, or no photo path is given. Otherwise run the command and
    judge each `live` criterion from its output. When the criteria file has a
    `Live test setup:` paragraph, do what it says before and after the command.
+   It wins over this step where they differ: in chapter 4 the live test
+   creates resources in Google Cloud that cost money, so you ask before each
+   of its steps, and check the `gcloud` project in place of a photo path.
 
 7. Report.
 

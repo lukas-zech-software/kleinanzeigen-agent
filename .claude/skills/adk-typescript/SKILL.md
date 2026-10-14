@@ -67,6 +67,13 @@ Each of these cost a failed run. The evidence is named in
 - `adk run --log_level` sets the level of the CLI's own copy of ADK. The
   agent's entry file sets the level for the agent with `setLogLevel`. Both are
   needed for a quiet run.
+- `adk deploy cloud_run` cannot deploy these agents in ADK 2.3.0: it bundles
+  them, the server in its container bundles them again, and no agent loads.
+  It also sets `GOOGLE_GENAI_USE_ENTERPRISE=1`, which sends every model call
+  to Vertex AI instead of the Gemini API key. Deploy with the `Dockerfile`
+  and `cloud/deploy.sh`, and keep `GOOGLE_GENAI_USE_ENTERPRISE=false`.
+- ADK's API server keeps sessions in memory. The call that runs an agent must
+  reach the instance that created its session: one instance on Cloud Run.
 
 ## Commands
 
@@ -80,4 +87,6 @@ Each of these cost a failed run. The evidence is named in
 | `npm run agent:publisher`                        | The chapter 3 agent with `adk run`                                    | Yes     |
 | `npm run eval:publisher`                         | The chapter 3 eval set with ADK's eval runner                         | Yes     |
 | `npm run agent:web`                              | ADK web UI for the agents in `adk/`                                   | To chat |
+| `cloud/setup.sh`, `cloud/deploy.sh`              | Chapter 4: creates billable resources in Google Cloud. Ask first      | Yes     |
+| `cloud/upload.sh <file>`, `cloud/teardown.sh`    | Runs the agents in the cloud; deletes everything again. Ask first     | Yes, No |
 | `scripts/update-adk-guides.sh [ref]`             | Replaces the vendored guides                                          | No      |
