@@ -26,8 +26,8 @@ publish it so that other developers can learn the same way.
 > [!TIP]
 > **Hiring, or curious how I work with AI agents?** I built this repository
 > with a team of coding agents: Claude Opus 5.5 on the design work, three more
-> agents on the routine jobs, up to three running in parallel, and one
-> autonomous run of more than seven hours.
+> agents on the routine jobs, up to three running in parallel, and one goal
+> run that took two chapters from spec to published release.
 > **[Read how this was built →](docs/how-this-was-built.md)**
 
 ## What you build
