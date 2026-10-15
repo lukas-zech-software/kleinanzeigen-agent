@@ -23,6 +23,13 @@ publish it so that other developers can learn the same way.
 - **Here to learn?** Go to the [Quick start](#quick-start).
 - **Here to see how it is built?** Take the [guided tour](#guided-tour).
 
+> [!TIP]
+> **Hiring, or curious how I work with AI agents?** I built this repository
+> with a team of coding agents: Claude Opus 5.5 on the design work, three more
+> agents on the routine jobs, up to three running in parallel, and one
+> autonomous run of more than seven hours.
+> **[Read how this was built →](docs/how-this-was-built.md)**
+
 ## What you build
 
 ```mermaid
@@ -205,8 +212,9 @@ reading:
   call goes through ADK, with the probe behind each decision. A
   [guard script](scripts/check-banned-apis.sh) and an offline test with a
   scripted model keep it that way.
-- **[How this was built](docs/how-this-was-built.md).** The workflow behind the
-  repository: design spec, implementation plan, verified chain. The design
+- **[How this was built](docs/how-this-was-built.md).** The agent team and the
+  workflow behind the repository: design spec, implementation plan, verified
+  chain. The design
   specs are in [docs/superpowers/specs](docs/superpowers/specs).
 
 ## Questions and feedback
